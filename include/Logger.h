@@ -177,6 +177,10 @@ namespace {
     template<std::size_t N> Logger& operator<< ( const char (&data) [N] ){
       std::string s(data);
       _disablePrintfLineJump_ = true;
+      if(_isNewLine_){
+        Logger::buildCurrentPrefix();
+        _outputStream_ << _currentPrefix_;
+      }
       printFormat(s.c_str());
       _disablePrintfLineJump_ = false;
       return *this;
@@ -304,6 +308,10 @@ namespace {
             break;
           }
 
+          if(_disablePrintfLineJump_ and i_line > 0){
+            Logger::buildCurrentPrefix();
+            _outputStream_ << _currentPrefix_;
+          }
           // Recurse
           printFormat(splitedString[i_line].c_str());
 
@@ -315,8 +323,10 @@ namespace {
         return;
       }
       else{
-        Logger::buildCurrentPrefix();
-        if(_isNewLine_) _outputStream_ << _currentPrefix_;
+        if(not _disablePrintfLineJump_){
+          Logger::buildCurrentPrefix();
+          if(_isNewLine_) _outputStream_ << _currentPrefix_;
+        }
 
         if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
           _outputStream_ << formatString("%s", getTagColorStr(LogLevel::FATAL).c_str());
@@ -422,6 +432,10 @@ namespace {
   // template specialization for strings
   template <> Logger& Logger::operator<< <std::string>  ( std::string const &data){
     _disablePrintfLineJump_ = true;
+    if(_isNewLine_){
+      Logger::buildCurrentPrefix();
+      _outputStream_ << _currentPrefix_;
+    }
     printFormat(data.c_str()); // printFormat will split the string wrt \n
     _disablePrintfLineJump_ = false;
     return *this;
