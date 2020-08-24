@@ -19,6 +19,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 
 #ifndef LOGGER_MAX_LOG_LEVEL_PRINTED
