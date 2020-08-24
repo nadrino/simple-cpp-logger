@@ -13,7 +13,7 @@ int main(){
   Logger::quietLineJump();
 
 
-  LogInfo << "First, let's add a header that will be printed for every calls in this source file..." << std::endl;
+  LogInfo << "First, let's add a header string that will be printed for every calls in this source file..." << std::endl;
   Logger::setUserHeaderStr("[LoggerExample]");
   LogInfo << "There you go :)." << std::endl;
 
@@ -73,10 +73,10 @@ int main(){
 
 
   LogInfo << "-----------------------------------------" << std::endl;
-  LogInfo << "Specifying the print level:" << std::endl;
+  LogInfo << "Specifying the prefix level:" << std::endl;
   LogInfo << "-----------------------------------------" << std::endl;
   Logger::setPrefixLevel(Logger::PrefixLevel::NONE);
-  LogDebug << "NONE -> No prefix at all. (or the userPrefixStr if you set it before)" << std::endl;
+  LogDebug << "NONE -> No prefix at all. (or only the Header string if you set it before)" << std::endl;
   Logger::setPrefixLevel(Logger::PrefixLevel::MINIMAL);
   LogDebug << "MINIMAL -> Only the log level." << std::endl;
   Logger::setPrefixLevel(Logger::PrefixLevel::PRODUCTION);
