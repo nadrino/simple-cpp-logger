@@ -12,14 +12,19 @@ int main(){
 
   Logger::quietLineJump();
 
-  LogInfo << "First, let's add a prefix for all calls in this source file..." << std::endl;
+  LogInfo << "First, let's add a prefix for every calls in this source file..." << std::endl;
   Logger::setUserPrefixStr("[LoggerExample]");
   LogInfo << "There you go :)." << std::endl;
 
   LogInfo.quietLineJump();
 
+  LogInfo << "-----------------------------------------" << std::endl;
+  LogInfo << "You can use printf() style calls." << std::endl;
+  LogInfo << "-----------------------------------------" << std::endl;
+
+
   int *i_ptr = new int();
-  LogInfo("You can use %s style calls: here is a pointer \"%p\"", "printf()", i_ptr);
+  LogInfo("Here is a pointer \"%p\", followed by its int value: %i", i_ptr, *i_ptr);
   delete i_ptr;
 
   LogInfo.quietLineJump();
@@ -28,13 +33,13 @@ int main(){
   LogInfo << "Here are all the different log levels:" << std::endl;
   LogInfo << "-----------------------------------------" << std::endl;
 
-  LogFatal << 0 << ": Is a Logger::LogLevel::FATAL" << std::endl;
-  LogError << 1 << ": Is a Logger::LogLevel::ERROR" << std::endl;
-  LogAlert << 2 << ": Is a Logger::LogLevel::ALERT" << std::endl;
-  LogWarning << 3 << ": Is a Logger::LogLevel::WARNING" << std::endl;
-  LogInfo << 4 << ": Is a Logger::LogLevel::INFO" << std::endl;
-  LogDebug << 5 << ": Is a Logger::LogLevel::DEBUG" << std::endl;
-  LogTrace << 6 << ": Is a Logger::LogLevel::TRACE" << std::endl;
+  LogFatal    << 0 << ": Is a Logger::LogLevel::FATAL" << std::endl;
+  LogError    << 1 << ": Is a Logger::LogLevel::ERROR" << std::endl;
+  LogAlert    << 2 << ": Is a Logger::LogLevel::ALERT" << std::endl;
+  LogWarning  << 3 << ": Is a Logger::LogLevel::WARNING" << std::endl;
+  LogInfo     << 4 << ": Is a Logger::LogLevel::INFO" << std::endl;
+  LogDebug    << 5 << ": Is a Logger::LogLevel::DEBUG" << std::endl;
+  LogTrace    << 6 << ": Is a Logger::LogLevel::TRACE" << std::endl;
 
   LogInfo.quietLineJump();
 
@@ -82,9 +87,17 @@ int main(){
 
   Logger::quietLineJump();
 
-  LogInfo("test lol \nnew line ?");
-  LogInfo << std::string("test lol \nnew line ?") << std::endl;
-  LogInfo << "test lol \nnew line ?" << std::endl;
+  std::stringstream ss;
+  ss << "You can also print" << std::endl;
+  ss << "multiple lines";
+  LogTrace(ss.str().c_str());
+
+  ss.str("");
+  ss << "from a string which contains:" << std::endl;
+  ss << "\"\\n\"";
+  LogTrace << ss.str() << std::endl;
+
+  LogTrace << "-> It also works with strings literals,\na.k.a. \"const char[N]\" (or hard coded strings)" << std::endl;
 
   Logger::quietLineJump();
 

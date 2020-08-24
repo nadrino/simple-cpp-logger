@@ -166,6 +166,13 @@ namespace {
 
       return *this;
     }
+    template<std::size_t N> Logger& operator<< ( const char (&data) [N] ){
+      std::string s(data);
+      _disablePrintFormatLineJump_ = true;
+      printFormat(s.c_str());
+      _disablePrintFormatLineJump_ = false;
+      return *this;
+    }
 
 
   protected:
@@ -287,7 +294,7 @@ namespace {
       }
       else{
         Logger::buildCurrentPrefix();
-        _outputStream_ << _currentPrefix_;
+        if(_isNewLine_) _outputStream_ << _currentPrefix_;
 
         if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
           _outputStream_ << formatString("%s", getTagColorStr(LogLevel::FATAL).c_str());
@@ -395,16 +402,19 @@ namespace {
     _disablePrintFormatLineJump_ = false;
     return *this;
   }
-  template <> Logger& Logger::operator<< <const char[]> ( char const (&data) []){
-    _disablePrintFormatLineJump_ = true;
-    printFormat(data); // printFormat will split the string wrt \n
-    _disablePrintFormatLineJump_ = false;
-    return *this;
-  }
-  template <> Logger& Logger::operator<< <const char *> ( const char* const &data ){
-    printFormat(data); // printFormat will split the string wrt \n
-    return *this;
-  }
+//  template <> Logger& Logger::operator<< <const char[]> ( char const (&data) []){
+//    _disablePrintFormatLineJump_ = true;
+//    printFormat(data); // printFormat will split the string wrt \n
+//    _disablePrintFormatLineJump_ = false;
+//    return *this;
+//  }
+//  template <> Logger& Logger::operator<< <const char *> ( const char* const &data ){
+//    _disablePrintFormatLineJump_ = true;
+//    printFormat(data); // printFormat will split the string wrt \n
+//    _disablePrintFormatLineJump_ = false;
+//    return *this;
+//  }
+
 
 }
 
