@@ -33,6 +33,10 @@
 #define DEFAULT_ENABLE_COLORS   1
 #endif
 
+#ifndef DEFAULT_ENABLE_COLORS_ON_USER_HEADER
+#define DEFAULT_ENABLE_COLORS_ON_USER_HEADER   0
+#endif
+
 #define LogFatal       (Logger{Logger::LogLevel::FATAL,    __FILE__, __LINE__})
 #define LogError       (Logger{Logger::LogLevel::ERROR,    __FILE__, __LINE__})
 #define LogAlert       (Logger{Logger::LogLevel::ALERT,    __FILE__, __LINE__})
@@ -83,11 +87,14 @@ namespace {
     static void setEnableColors(bool enableColors_) {
       _enableColors_ = enableColors_;
     }
+    static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_){
+      _propagateColorsOnUserHeader_ = propagateColorsOnUserHeader_;
+    }
     static void setPrefixLevel(PrefixLevel prefixLevel_) {
       _prefixLevel_ = prefixLevel_;
     }
-    static void setUserPrefixStr(std::string userPrefixStr_){
-      _userPrefixStr_ = std::move(userPrefixStr_);
+    static void setUserHeaderStr(std::string userHeaderStr_){
+      _userHeaderStr_ = std::move(userHeaderStr_);
     }
 
     static LogLevel getLogLevel(int logLevelInt_){
@@ -168,9 +175,9 @@ namespace {
     }
     template<std::size_t N> Logger& operator<< ( const char (&data) [N] ){
       std::string s(data);
-      _disablePrintFormatLineJump_ = true;
+      _disablePrintfLineJump_ = true;
       printFormat(s.c_str());
-      _disablePrintFormatLineJump_ = false;
+      _disablePrintfLineJump_ = false;
       return *this;
     }
 
@@ -189,9 +196,12 @@ namespace {
         _currentPrefix_ += ss.str();
       }
 
-      if(not _userPrefixStr_.empty()){
+      // User header
+      if(not _userHeaderStr_.empty()){
         if(not _currentPrefix_.empty()) _currentPrefix_ += " ";
-        _currentPrefix_ += _userPrefixStr_;
+        if(_enableColors_ and _propagateColorsOnUserHeader_) _currentPrefix_ += getTagColorStr(_currentLogLevel_);
+        _currentPrefix_ += _userHeaderStr_;
+        if(_enableColors_ and _propagateColorsOnUserHeader_) _currentPrefix_ += "\033[0m";
       }
 
       // Severity Tag
@@ -286,8 +296,8 @@ namespace {
         auto splitedString = splitString(tempStr, "\n");
         for(int i_line = 0 ; i_line < int(splitedString.size()) ; i_line++){
           printFormat(splitedString[i_line].c_str());
-          if( _disablePrintFormatLineJump_
-              and i_line != splitedString.size()-1 // let the last line jump be handle by the user
+          if(_disablePrintfLineJump_
+             and i_line != splitedString.size()-1 // let the last line jump be handle by the user
               ) _outputStream_ << std::endl;
         }
         return;
@@ -305,7 +315,7 @@ namespace {
           _outputStream_ << formatString("\033[0m");
       }
 
-      if(not _disablePrintFormatLineJump_){
+      if(not _disablePrintfLineJump_){
         _outputStream_ << std::endl;
         _isNewLine_ = true; // always new line after a printf style (useful when using << calls after)
       }
@@ -375,45 +385,35 @@ namespace {
 
     // parameters
     static bool _enableColors_;
-    static bool _disablePrintFormatLineJump_;
+    static bool _disablePrintfLineJump_;
+    static bool _propagateColorsOnUserHeader_;
     static LogLevel _maxLogLevel_;
     static PrefixLevel _prefixLevel_;
-    static std::string _userPrefixStr_;
+    static std::string _userHeaderStr_;
 
   };
 
   bool Logger::_enableColors_ = DEFAULT_ENABLE_COLORS;
+  bool Logger::_propagateColorsOnUserHeader_ = DEFAULT_ENABLE_COLORS_ON_USER_HEADER;
+  bool Logger::_disablePrintfLineJump_ = false;
   Logger::LogLevel Logger::_maxLogLevel_ = Logger::getLogLevel(DEFAULT_LOG_LEVEL);
   Logger::PrefixLevel Logger::_prefixLevel_ = Logger::getPrefixLevel(DEFAULT_PREFIX_LEVEL);
-  std::string Logger::_userPrefixStr_;
+  std::string Logger::_userHeaderStr_;
 
   std::string Logger::_currentPrefix_;
   Logger::LogLevel Logger::_currentLogLevel_ = Logger::LogLevel::TRACE;
   std::string Logger::_currentFileName_;
   int Logger::_currentLineNumber_ = -1;
   bool Logger::_isNewLine_ = true;
-  bool Logger::_disablePrintFormatLineJump_ = false;
   std::ostream& Logger::_outputStream_ = std::cout;
 
-  // template specialization
+  // template specialization for strings
   template <> Logger& Logger::operator<< <std::string>  ( std::string const &data){
-    _disablePrintFormatLineJump_ = true;
+    _disablePrintfLineJump_ = true;
     printFormat(data.c_str()); // printFormat will split the string wrt \n
-    _disablePrintFormatLineJump_ = false;
+    _disablePrintfLineJump_ = false;
     return *this;
   }
-//  template <> Logger& Logger::operator<< <const char[]> ( char const (&data) []){
-//    _disablePrintFormatLineJump_ = true;
-//    printFormat(data); // printFormat will split the string wrt \n
-//    _disablePrintFormatLineJump_ = false;
-//    return *this;
-//  }
-//  template <> Logger& Logger::operator<< <const char *> ( const char* const &data ){
-//    _disablePrintFormatLineJump_ = true;
-//    printFormat(data); // printFormat will split the string wrt \n
-//    _disablePrintFormatLineJump_ = false;
-//    return *this;
-//  }
 
 
 }

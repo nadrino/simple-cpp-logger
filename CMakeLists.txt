@@ -21,6 +21,7 @@ include_directories(./include)
 add_definitions( -D DEFAULT_LOG_LEVEL=6 )
 add_definitions( -D DEFAULT_PREFIX_LEVEL=2 )
 add_definitions( -D DEFAULT_ENABLE_COLORS=1 )
+add_definitions( -D DEFAULT_ENABLE_COLORS_ON_USER_HEADER=0 )
 
 
 add_executable(LoggerExample example/main.cpp)
