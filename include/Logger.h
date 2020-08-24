@@ -21,20 +21,20 @@
 #include <iomanip>
 
 
-#ifndef DEFAULT_LOG_LEVEL
-#define DEFAULT_LOG_LEVEL   6
+#ifndef LOGGER_MAX_LOG_LEVEL_PRINTED
+#define LOGGER_MAX_LOG_LEVEL_PRINTED   6
 #endif
 
-#ifndef DEFAULT_PREFIX_LEVEL
-#define DEFAULT_PREFIX_LEVEL   1
+#ifndef LOGGER_PREFIX_LEVEL
+#define LOGGER_PREFIX_LEVEL   1
 #endif
 
-#ifndef DEFAULT_ENABLE_COLORS
-#define DEFAULT_ENABLE_COLORS   1
+#ifndef LOGGER_ENABLE_COLORS
+#define LOGGER_ENABLE_COLORS   1
 #endif
 
-#ifndef DEFAULT_ENABLE_COLORS_ON_USER_HEADER
-#define DEFAULT_ENABLE_COLORS_ON_USER_HEADER   0
+#ifndef LOGGER_ENABLE_COLORS_ON_USER_HEADER
+#define LOGGER_ENABLE_COLORS_ON_USER_HEADER   0
 #endif
 
 #define LogFatal       (Logger{Logger::LogLevel::FATAL,    __FILE__, __LINE__})
@@ -291,14 +291,25 @@ namespace {
     template<typename ... Args> static void printFormat(const char *fmt_str, Args ... args ){
       if (_currentLogLevel_ > _maxLogLevel_) return;
 
+      // Check if there is multiple lines
       std::string tempStr(fmt_str);
       if (doesStringContainsSubstring(tempStr, "\n")){
         auto splitedString = splitString(tempStr, "\n");
         for(int i_line = 0 ; i_line < int(splitedString.size()) ; i_line++){
+
+          // If the last line is empty, don't print it since a \n will be added.
+          // Let the end of this function do it.
+          if(i_line == splitedString.size()-1 and splitedString[i_line].empty()){
+            break;
+          }
+
+          // Recurse
           printFormat(splitedString[i_line].c_str());
-          if(_disablePrintfLineJump_
-             and i_line != splitedString.size()-1 // let the last line jump be handle by the user
-              ) _outputStream_ << std::endl;
+
+          // let the last line jump be handle by the user
+          if(_disablePrintfLineJump_ and i_line != splitedString.size()-1){
+            _outputStream_ << std::endl;
+          }
         }
         return;
       }
@@ -393,11 +404,11 @@ namespace {
 
   };
 
-  bool Logger::_enableColors_ = DEFAULT_ENABLE_COLORS;
-  bool Logger::_propagateColorsOnUserHeader_ = DEFAULT_ENABLE_COLORS_ON_USER_HEADER;
+  bool Logger::_enableColors_ = LOGGER_ENABLE_COLORS;
+  bool Logger::_propagateColorsOnUserHeader_ = LOGGER_ENABLE_COLORS_ON_USER_HEADER;
   bool Logger::_disablePrintfLineJump_ = false;
-  Logger::LogLevel Logger::_maxLogLevel_ = Logger::getLogLevel(DEFAULT_LOG_LEVEL);
-  Logger::PrefixLevel Logger::_prefixLevel_ = Logger::getPrefixLevel(DEFAULT_PREFIX_LEVEL);
+  Logger::LogLevel Logger::_maxLogLevel_ = Logger::getLogLevel(LOGGER_MAX_LOG_LEVEL_PRINTED);
+  Logger::PrefixLevel Logger::_prefixLevel_ = Logger::getPrefixLevel(LOGGER_PREFIX_LEVEL);
   std::string Logger::_userHeaderStr_;
 
   std::string Logger::_currentPrefix_;
