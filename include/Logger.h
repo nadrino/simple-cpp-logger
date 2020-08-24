@@ -183,6 +183,7 @@ namespace {
       }
       printFormat(s.c_str());
       _disablePrintfLineJump_ = false;
+      if(data[N-1] != '\n') _isNewLine_ = false;
       return *this;
     }
 
@@ -438,6 +439,7 @@ namespace {
     }
     printFormat(data.c_str()); // printFormat will split the string wrt \n
     _disablePrintfLineJump_ = false;
+    if(data[data.size()-1] != '\n') _isNewLine_ = false;
     return *this;
   }
 

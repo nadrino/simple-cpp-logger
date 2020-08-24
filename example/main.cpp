@@ -10,6 +10,9 @@ int main(){
   LogInfo << "Welcome to the simple-cpp-logger example." << std::endl;
   LogInfo << "-----------------------------------------" << std::endl;
 
+  std::string f = "f.out";
+  LogInfo << "file = " << f << std::endl;
+
   Logger::quietLineJump();
 
 
