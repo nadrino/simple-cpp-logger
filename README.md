@@ -12,7 +12,7 @@ A cmake example file is shipped within this repository.
 
 ## Showcase
 
-Here is a screenshot of first output lines you get while running the example.
+Here is a screenshot of the first output lines you get while running the example.
 
 ![](resources/screenshot/example_showcase.png)
 
