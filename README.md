@@ -11,7 +11,7 @@ A cmake example file is shipped within this repository.
 
 Here is a screenshot of first output lines you get while running the example.
 
-![](screenshots/example_showcase.png)
+![](screenshot/example_showcase.png)
 
 If you want to see all the features embedded in the example, feel free to build and run it yourself: 
 
