@@ -31,7 +31,7 @@ make
 ## Getting Setup
 
 You can add simple-cpp-logger to your existing project as a submodule for example.
-In this example we assume that your project is using CMake.
+In this guide we assume that your project is using CMake.
 In your CMakeLists.txt, add the following lines:
 
 ```cmake
