@@ -15,6 +15,7 @@
 #include <vector>
 #include <thread>
 #include <map>
+#include <mutex>
 #include <type_traits>
 #include <sstream>
 #include <iostream>
@@ -146,6 +147,7 @@ namespace {
     template <typename... TT> void operator()(TT && ... args) {
 
       if (_currentLogLevel_ > _maxLogLevel_) return;
+      std::lock_guard<std::mutex> lockGuard(_loggerMutex_);
 
       printFormat(std::forward<TT>(args)...);
 
@@ -162,6 +164,8 @@ namespace {
 
       std::stringstream dataStream;
       dataStream << data;
+
+      std::lock_guard<std::mutex> lockGuard(_loggerMutex_);
       printFormat(dataStream.str().c_str());
 
       return *this;
@@ -395,6 +399,7 @@ namespace {
     static std::string _currentPrefix_;
     static bool _isNewLine_;
     static std::ostream& _outputStream_;
+    static std::mutex _loggerMutex_;
 
     // parameters
     static bool _enableColors_;
@@ -419,6 +424,7 @@ namespace {
   int Logger::_currentLineNumber_ = -1;
   bool Logger::_isNewLine_ = true;
   std::ostream& Logger::_outputStream_ = std::cout;
+  std::mutex Logger::_loggerMutex_;
 
 }
 
