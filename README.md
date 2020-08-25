@@ -9,9 +9,8 @@ A cmake example file is shipped within this repository.
 
 ## Screenshots
 
-![](screenshots/1.png)
-![](screenshots/2.png)
-![](screenshots/3.png)
+![](screenshots/example_showcase.png)
+
 
 ## Requirements
 

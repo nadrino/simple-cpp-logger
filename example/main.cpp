@@ -42,7 +42,7 @@ int main(){
   LogDebug << "FULL (4) -> Add the current thread id." << std::endl;
   Logger::setPrefixLevel(Logger::PrefixLevel::DEBUG);
   LogInfo << "For a global application, set it with cmake:" << std::endl;
-  LogInfo << "\"-D LOGGER_PREFIX_LEVEL=2\" -> PRODUCTION by default" << std::endl;
+  LogInfo << "\"-D LOGGER_PREFIX_LEVEL=3\" -> DEBUG by default" << std::endl;
 
   Logger::quietLineJump();
 
