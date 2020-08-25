@@ -175,6 +175,9 @@ namespace {
       return *this;
     }
     template<std::size_t N> Logger& operator<< ( const char (&data) [N] ){
+
+      if (_currentLogLevel_ > _maxLogLevel_) return *this;
+
       std::string s(data);
       _disablePrintfLineJump_ = true;
       if(_isNewLine_){
@@ -432,6 +435,9 @@ namespace {
 
   // template specialization for strings
   template <> Logger& Logger::operator<< <std::string>  ( std::string const &data){
+
+    if (_currentLogLevel_ > _maxLogLevel_) return *this;
+
     _disablePrintfLineJump_ = true;
     if(_isNewLine_){
       Logger::buildCurrentPrefix();
