@@ -160,16 +160,9 @@ namespace {
 
       if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
-      // If new line -> print prefix
-      if (_isNewLine_) {
-        Logger::buildCurrentPrefix();
-        _outputStream_ << _currentPrefix_;
-        _isNewLine_ = false;
-      }
-
-      if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL) _outputStream_ << getTagColorStr(LogLevel::FATAL);
-      _outputStream_ << data;
-      if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL) _outputStream_ << "\033[0m";
+      std::stringstream dataStream;
+      dataStream << data;
+      printFormat(dataStream.str().c_str());
 
       return *this;
     }
@@ -180,18 +173,6 @@ namespace {
 
       _outputStream_ << f;
       _isNewLine_ = true;
-
-      return *this;
-    }
-    template<std::size_t N> Logger& operator<< ( const char (&data) [N] ){
-
-      // Template specialization for string literals
-      if (_currentLogLevel_ > _maxLogLevel_) return *this;
-
-      printFormat(data);
-
-      // If the last char is jump line, it has not been printed
-      if(data[N-1] != '\n') _isNewLine_ = false;
 
       return *this;
     }
@@ -305,7 +286,9 @@ namespace {
 
     template<typename ... Args> static void printFormat(const char *fmt_str, Args ... args ){
 
-      std::string formattedString = formatString(fmt_str, std::forward<Args>(args)...);
+      std::string formattedString;
+      if(sizeof...(Args) == 0) formattedString = fmt_str; // If there no extra args, string formatting is not needed
+      else formattedString = formatString(fmt_str, std::forward<Args>(args)...);
 
       // Check if there is multiple lines
       if( doesStringContainsSubstring(formattedString, "\n") ) {
@@ -338,6 +321,7 @@ namespace {
         if(_isNewLine_){
           Logger::buildCurrentPrefix();
           _outputStream_ << _currentPrefix_;
+          _isNewLine_ = false;
         }
 
         if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
@@ -435,18 +419,6 @@ namespace {
   int Logger::_currentLineNumber_ = -1;
   bool Logger::_isNewLine_ = true;
   std::ostream& Logger::_outputStream_ = std::cout;
-
-  // template specialization for strings
-  template <> Logger& Logger::operator<< <std::string>  ( std::string const &data){
-    // Always check the verbosity
-    if (_currentLogLevel_ > _maxLogLevel_) return *this;
-
-    printFormat(data.c_str());
-
-    if(data[data.size()-1] != '\n') _isNewLine_ = false;
-    return *this;
-  }
-
 
 }
 
