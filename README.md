@@ -7,7 +7,7 @@ This simple header-only library written in C++ provides logging features with ha
 Because it's written as a header-only library, you can easily add it to your current project. 
 A cmake example file is shipped within this repository.
 
-## Screenshots
+## Showcase
 
 ![](screenshots/example_showcase.png)
 
