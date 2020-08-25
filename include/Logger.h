@@ -144,14 +144,14 @@ namespace {
     }
 
     // For printf-style calls
-    template <typename... TT> void operator()(TT && ... args) {
+    template <typename... TT> void operator()(const char *fmt_str, TT && ... args) {
 
       if (_currentLogLevel_ > _maxLogLevel_) return;
       std::lock_guard<std::mutex> lockGuard(_loggerMutex_);
 
-      printFormat(std::forward<TT>(args)...);
+      printFormat(fmt_str, std::forward<TT>(args)...);
 
-      if(not _disablePrintfLineJump_){
+      if(not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str)-1] != '\n'){
         _outputStream_ << std::endl;
         _isNewLine_ = true;
       }
@@ -304,6 +304,7 @@ namespace {
           // If the last line is empty, don't print since a \n will be added.
           // Let the parent function do it.
           if (i_line == (slicedString.size()-1) and slicedString[i_line].empty()) {
+            if(formattedString.back() == '\n') _isNewLine_ = true;
             break;
           }
 

@@ -51,6 +51,7 @@ int main(){
   LogInfo << "You can use printf() style calls." << std::endl;
   LogInfo << "-----------------------------------------" << std::endl;
   int *i_ptr = new int();
+  *i_ptr = 99;
   LogInfo("Here is a pointer \"%p\", followed by its int value: %i", i_ptr, *i_ptr);
   delete i_ptr;
 
@@ -121,12 +122,17 @@ int main(){
 
   Logger::quietLineJump();
 
+
 #ifdef DEBUG_EXAMPLE
-  LogInfo("test %i\nline %i\nnext %i", 0, 1, 2);
-  LogInfo << "test \nlast line is\n empty\n";
-  LogInfo << "lol" << 3.14 << std::endl;
+  // dirty examples for debugging purposes
+  LogInfo("test %i\nline %i\nnext %i\n", 0, 1, 2);
+  LogInfo << "test \nlast line is\nempty\n";
+  LogInfo << "lol " << 3.14 << " ptr=" << i_ptr << std::endl;
   LogInfo << "lol %i" << std::endl;
+
+  Logger::quietLineJump();
 #endif
+
 
   LogAlert << "-----------------------------------------" << std::endl;
   LogAlert << "Have Fun! :)" << std::endl;
