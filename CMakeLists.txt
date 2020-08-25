@@ -24,5 +24,11 @@ add_definitions( -D LOGGER_ENABLE_COLORS=1 )
 add_definitions( -D LOGGER_ENABLE_COLORS_ON_USER_HEADER=0 )
 
 
-add_executable(LoggerExample example/main.cpp)
 
+
+# Example part
+if(${CMAKE_BUILD_TYPE} MATCHES Debug)
+    add_definitions( -D DEBUG_EXAMPLE )
+endif()
+
+add_executable(LoggerExample example/main.cpp)

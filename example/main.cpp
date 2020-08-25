@@ -121,11 +121,12 @@ int main(){
 
   Logger::quietLineJump();
 
+#ifdef DEBUG_EXAMPLE
   LogInfo("test %i\nline %i\nnext %i", 0, 1, 2);
   LogInfo << "test \nlast line is\n empty\n";
-
   LogInfo << "lol" << 3.14 << std::endl;
   LogInfo << "lol %i" << std::endl;
+#endif
 
   LogAlert << "-----------------------------------------" << std::endl;
   LogAlert << "Have Fun! :)" << std::endl;
