@@ -9,8 +9,20 @@ A cmake example file is shipped within this repository.
 
 ## Showcase
 
+Here is a screenshot of first output lines you get while running the example.
+
 ![](screenshots/example_showcase.png)
 
+If you want to see all the features embedded in the example, feel free to build the example: 
+
+```bash
+git clone https://github.com/nadrino/simple-cpp-logger.git
+mkdir simple-cpp-logger/build
+cd simple-cpp-logger/build
+cmake ../
+make
+./LoggerExample
+```
 
 ## Requirements
 
