@@ -13,7 +13,7 @@ Here is a screenshot of first output lines you get while running the example.
 
 ![](screenshots/example_showcase.png)
 
-If you want to see all the features embedded in the example, feel free to build the example: 
+If you want to see all the features embedded in the example, feel free to build and run it yourself: 
 
 ```bash
 git clone https://github.com/nadrino/simple-cpp-logger.git
