@@ -48,10 +48,11 @@ int main(){
 
 
   LogInfo << "-----------------------------------------" << std::endl;
-  LogInfo << "You can use printf() style calls." << std::endl;
+  LogInfo << "You can use printf() style calls too:" << std::endl;
   LogInfo << "-----------------------------------------" << std::endl;
   int *i_ptr = new int();
   *i_ptr = 99;
+  LogInfo << R"(-> LogInfo("Here is a pointer \"%p\", followed by its int value: %i", i_ptr, *i_ptr);)" << std::endl;
   LogInfo("Here is a pointer \"%p\", followed by its int value: %i", i_ptr, *i_ptr);
   delete i_ptr;
 
