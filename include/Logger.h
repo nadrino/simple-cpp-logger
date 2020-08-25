@@ -144,7 +144,15 @@ namespace {
 
     // For printf-style calls
     template <typename... TT> void operator()(TT && ... args) {
+
+      if (_currentLogLevel_ > _maxLogLevel_) return;
+
       printFormat(std::forward<TT>(args)...);
+
+      if(not _disablePrintfLineJump_){
+        _outputStream_ << std::endl;
+        _isNewLine_ = true;
+      }
     }
 
     // For std::cout-style calls
@@ -167,6 +175,7 @@ namespace {
     }
     Logger &operator<<(std::ostream &(*f)(std::ostream &)) {
 
+      // Handling std::endl
       if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
       _outputStream_ << f;
@@ -176,17 +185,14 @@ namespace {
     }
     template<std::size_t N> Logger& operator<< ( const char (&data) [N] ){
 
+      // Template specialization for string literals
       if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
-      std::string s(data);
-      _disablePrintfLineJump_ = true;
-      if(_isNewLine_){
-        Logger::buildCurrentPrefix();
-        _outputStream_ << _currentPrefix_;
-      }
-      printFormat(s.c_str());
-      _disablePrintfLineJump_ = false;
+      printFormat(data);
+
+      // If the last char is jump line, it has not been printed
       if(data[N-1] != '\n') _isNewLine_ = false;
+
       return *this;
     }
 
@@ -298,53 +304,50 @@ namespace {
     }
 
     template<typename ... Args> static void printFormat(const char *fmt_str, Args ... args ){
-      if (_currentLogLevel_ > _maxLogLevel_) return;
+
+      std::string formattedString = formatString(fmt_str, std::forward<Args>(args)...);
 
       // Check if there is multiple lines
-      std::string tempStr(fmt_str);
-      if (doesStringContainsSubstring(tempStr, "\n")){
-        auto splitedString = splitString(tempStr, "\n");
-        for(int i_line = 0 ; i_line < int(splitedString.size()) ; i_line++){
+      if( doesStringContainsSubstring(formattedString, "\n") ) {
 
-          // If the last line is empty, don't print it since a \n will be added.
-          // Let the end of this function do it.
-          if(i_line == splitedString.size()-1 and splitedString[i_line].empty()){
+        // Print each line individually
+        auto slicedString = splitString(formattedString, "\n");
+        for (int i_line = 0; i_line < int(slicedString.size()); i_line++) {
+
+          // If the last line is empty, don't print since a \n will be added.
+          // Let the parent function do it.
+          if (i_line == (slicedString.size()-1) and slicedString[i_line].empty()) {
             break;
           }
 
-          if(_disablePrintfLineJump_ and i_line > 0){
-            Logger::buildCurrentPrefix();
-            _outputStream_ << _currentPrefix_;
-          }
-          // Recurse
-          printFormat(splitedString[i_line].c_str());
+          // The next printed line should contain the prefix
+          _isNewLine_ = true;
 
-          // let the last line jump be handle by the user
-          if(_disablePrintfLineJump_ and i_line != splitedString.size()-1){
+          // Recurse
+          printFormat(slicedString[i_line].c_str());
+
+          // let the last line jump be handle by the user (or the parent function)
+          if (i_line != (slicedString.size() - 1)) {
             _outputStream_ << std::endl;
           }
-        }
-        return;
-      }
+
+        } // for each line
+      } // If multiline
       else{
-        if(not _disablePrintfLineJump_){
+
+        if(_isNewLine_){
           Logger::buildCurrentPrefix();
-          if(_isNewLine_) _outputStream_ << _currentPrefix_;
+          _outputStream_ << _currentPrefix_;
         }
 
         if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
           _outputStream_ << formatString("%s", getTagColorStr(LogLevel::FATAL).c_str());
 
-        _outputStream_ << formatString(fmt_str, std::forward<Args>(args)...);
+        _outputStream_ << formattedString;
 
         if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
           _outputStream_ << formatString("\033[0m");
-      }
-
-      if(not _disablePrintfLineJump_){
-        _outputStream_ << std::endl;
-        _isNewLine_ = true; // always new line after a printf style (useful when using << calls after)
-      }
+      } // else multiline
     }
 
     // Generic Functions
@@ -435,16 +438,11 @@ namespace {
 
   // template specialization for strings
   template <> Logger& Logger::operator<< <std::string>  ( std::string const &data){
-
+    // Always check the verbosity
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
-    _disablePrintfLineJump_ = true;
-    if(_isNewLine_){
-      Logger::buildCurrentPrefix();
-      _outputStream_ << _currentPrefix_;
-    }
-    printFormat(data.c_str()); // printFormat will split the string wrt \n
-    _disablePrintfLineJump_ = false;
+    printFormat(data.c_str());
+
     if(data[data.size()-1] != '\n') _isNewLine_ = false;
     return *this;
   }

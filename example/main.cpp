@@ -121,6 +121,8 @@ int main(){
 
   Logger::quietLineJump();
 
+  LogInfo("test %i\nline %i\nnext %i", 0, 1, 2);
+  LogInfo << "test \nlast line is\n empty\n";
 
   LogAlert << "-----------------------------------------" << std::endl;
   LogAlert << "Have Fun! :)" << std::endl;
