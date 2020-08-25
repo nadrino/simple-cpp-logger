@@ -1,5 +1,9 @@
 ![](resources/logo/simple-cpp-logger-logo.png)
 
+[![CC-0 license](https://img.shields.io/badge/License-CC--0-blue.svg)](https://creativecommons.org/licenses/by-nd/4.0)
+[![GitHub version](https://badge.fury.io/gh/nadrino%2Fsimple-cpp-logger.svg)](https://github.com/nadrino/simple-cpp-logger/releases/)
+[![Github all releases](https://img.shields.io/github/downloads/nadrino/simple-cpp-logger/total.svg)](https://GitHub.com/nadrino/simple-cpp-logger/releases/)
+
 ## Description 
 
 This simple header-only library written in C++ provides logging features with handy options.
