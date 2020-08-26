@@ -11,7 +11,8 @@ This simple header-only library written in C++ provides logging features with ha
 Because it's written as a header-only library, you can easily add it to your current project. 
 A cmake example file is shipped within this repository.
 
-## Features
+
+## Features
 
 - 7 different levels of logging severity: Fatal, Error, Alert, Warning, Info, Debug and Trace.
 - Both "std::cout <<" and "printf()" call-style are available with the same names.
