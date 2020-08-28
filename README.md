@@ -4,11 +4,24 @@
 [![GitHub version](https://badge.fury.io/gh/nadrino%2Fsimple-cpp-logger.svg)](https://github.com/nadrino/simple-cpp-logger/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/nadrino/simple-cpp-logger/total.svg)](https://GitHub.com/nadrino/simple-cpp-logger/releases/)
 
+
 ## Description 
 
 This simple header-only library written in C++ provides logging features with handy options.
 Because it's written as a header-only library, you can easily add it to your current project. 
 A cmake example file is shipped within this repository.
+
+
+## Features
+
+- 7 different levels of logging severity: Fatal, Error, Alert, Warning, Info, Debug and Trace.
+- Both "std::cout <<" and "printf()" call-style are available with the same names.
+- Ajustable prefix can display the **Time**, **Severity**, **Current Filename**, **Current Line Number**, **Current Thread ID** and even a custom header string set by the user.
+- Ability to mute prints based on their severity. 
+- Option to disable colors on the prefix.
+- Static members (user options) of this header class are globally settable with preprocessor macros (see cmake's add_definitions calls).
+- In-string "\n" char are recognised and the prefix is automatically reprinted.
+
 
 ## Showcase
 
@@ -26,6 +39,7 @@ cmake ../
 make
 ./LoggerExample
 ```
+
 
 ## Requirements
 
