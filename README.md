@@ -1,4 +1,4 @@
-![](resources/logo/simple-cpp-logger-logo.png)
+![](resources/logo/simple-cpp-logger-logo_flat.png)
 
 [![CC-0 license](https://img.shields.io/badge/License-CC--0-blue.svg)](https://creativecommons.org/licenses/by-nd/4.0)
 [![GitHub version](https://badge.fury.io/gh/nadrino%2Fsimple-cpp-logger.svg)](https://github.com/nadrino/simple-cpp-logger/releases/)
