@@ -72,7 +72,7 @@ namespace {
     static int getMaxLogLevelInt();
     static LogLevel getMaxLogLevel();
     static std::string getPrefixString();
-    static std::string getPrefixString(Logger& loggerConstructor); // Supply the logger (via macros) to update the prefix
+    static std::string getPrefixString(Logger loggerConstructor); // Supply the logger (via macros) to update the prefix
 
     // User Methods
     static void quietLineJump();

@@ -113,7 +113,7 @@ namespace {
     return _currentPrefix_;
   }
 
-  std::string Logger::getPrefixString(Logger& loggerConstructor){
+  std::string Logger::getPrefixString(Logger loggerConstructor){
     // Calling the constructor will automatically update the fields
     return Logger::getPrefixString();
   }
