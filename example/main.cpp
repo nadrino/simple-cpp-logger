@@ -125,11 +125,15 @@ int main(){
 
 
 #ifdef DEBUG_EXAMPLE
+  Logger::setEnableColors(true);
+
   // dirty examples for debugging purposes
   LogInfo("test %i\nline %i\nnext %i\n", 0, 1, 2);
   LogInfo << "test \nlast line is\nempty\n";
   LogInfo << "lol " << 3.14 << " ptr=" << i_ptr << std::endl;
   LogInfo << "lol %i" << std::endl;
+
+  std::cout << Logger::getPrefixString(LogWarning) << "Manual printout" << std::endl;
 
   Logger::quietLineJump();
 #endif
