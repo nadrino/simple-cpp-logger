@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <algorithm>
 
+
 namespace {
 
   // Setters
@@ -407,4 +408,5 @@ namespace {
   std::mutex Logger::_loggerMutex_;
 
 }
+
 #endif //SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
