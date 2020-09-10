@@ -26,6 +26,10 @@
 #define LOGGER_ENABLE_COLORS_ON_USER_HEADER   0
 #endif
 
+#ifndef LOGGER_PREFIX_FORMAT
+#define LOGGER_PREFIX_FORMAT "{TIME} {USER_HEADER} {SEVERITY} {FILELINE} {THREAD}"
+#endif
+
 #define LogFatal       (Logger{Logger::LogLevel::FATAL,    __FILE__, __LINE__})
 #define LogError       (Logger{Logger::LogLevel::ERROR,    __FILE__, __LINE__})
 #define LogAlert       (Logger{Logger::LogLevel::ALERT,    __FILE__, __LINE__})
@@ -65,6 +69,7 @@ namespace {
     static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
     static void setPrefixLevel(PrefixLevel prefixLevel_);
     static void setUserHeaderStr(std::string userHeaderStr_);
+    static void setPrefixFormat(std::string prefixFormat_);
 
     //! Getters
     static LogLevel getLogLevel(int logLevelInt_);
@@ -104,6 +109,9 @@ namespace {
     template<typename ... Args> static std::string formatString( const char *fmt_str, Args ... args );
     static bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
     static std::string toLowerCase(std::string& inputStr_);
+    static std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_);
+    static std::string stripStringUnicode(const std::string &inputStr_);
+    static std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_);
 
 
   private:
@@ -124,6 +132,7 @@ namespace {
     static LogLevel _maxLogLevel_;
     static PrefixLevel _prefixLevel_;
     static std::string _userHeaderStr_;
+    static std::string _prefixFormat_;
 
   };
 

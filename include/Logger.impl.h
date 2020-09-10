@@ -49,6 +49,10 @@ namespace {
     _userHeaderStr_ = std::move(userHeaderStr_);
   }
 
+  void Logger::setPrefixFormat(std::string prefixFormat_){
+    _prefixFormat_ = std::move(prefixFormat_);
+  }
+
 
   // Getters
   Logger::LogLevel Logger::getLogLevel(int logLevelInt_) {
@@ -177,56 +181,77 @@ namespace {
 
   // Protected Methods
   void Logger::buildCurrentPrefix() {
-    _currentPrefix_ = ""; // reset
 
-    // Time
+    // default:
+    // _prefixFormat_ = "{TIME} {USER_HEADER} {SEVERITY} {FILELINE} {THREAD}";
+
+    // Reset the prefix
+    _currentPrefix_ = Logger::stripStringUnicode(_prefixFormat_); // remove potential colors
+    std::string contentStrBuffer;
+
+    // "{THREAD}"
+    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::FULL){
+      std::stringstream ss;
+      ss << "\x1b[90m(thread: " << std::this_thread::get_id() << ")\033[0m";
+      contentStrBuffer = ss.str();
+    }
+    _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{THREAD}", contentStrBuffer);
+    contentStrBuffer = "";
+
+    // {FILE} and {LINE}
+    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::DEBUG){
+      contentStrBuffer = "\x1b[90m";
+      contentStrBuffer += _currentFileName_;
+      contentStrBuffer += ":";
+      contentStrBuffer += std::to_string(_currentLineNumber_);
+      contentStrBuffer += "\033[0m";
+    }
+    _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{FILELINE}", contentStrBuffer);
+    contentStrBuffer = "";
+
+    // {TIME}
     if (Logger::_prefixLevel_ >= Logger::PrefixLevel::PRODUCTION) {
       time_t rawTime = std::time(nullptr);
       struct tm timeInfo = *localtime(&rawTime);
       std::stringstream ss;
       ss << std::put_time(&timeInfo, "%H:%M:%S");
-      _currentPrefix_ += ss.str();
+      contentStrBuffer = ss.str();
     }
+    _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{TIME}", contentStrBuffer);
+    contentStrBuffer = "";
 
-    // User header
-    if(not _userHeaderStr_.empty()){
-      if(not _currentPrefix_.empty()) _currentPrefix_ += " ";
-      if(_enableColors_ and _propagateColorsOnUserHeader_) _currentPrefix_ += getTagColorStr(_currentLogLevel_);
-      _currentPrefix_ += _userHeaderStr_;
-      if(_enableColors_ and _propagateColorsOnUserHeader_) _currentPrefix_ += "\033[0m";
-    }
-
-    // Severity Tag
-    if (Logger::_prefixLevel_ >= Logger::PrefixLevel::MINIMAL){
-      if (not _currentPrefix_.empty()) _currentPrefix_ += " ";
-      if (_enableColors_) _currentPrefix_ += getTagColorStr(_currentLogLevel_);
+    // {SEVERITY}
+    if (Logger::_prefixLevel_ >= Logger::PrefixLevel::MINIMAL) {
+      if (_enableColors_) contentStrBuffer += getTagColorStr(_currentLogLevel_);
       char buffer[6];
       snprintf(buffer, 6, "%5.5s", getTagStr(_currentLogLevel_).c_str());
-      _currentPrefix_ += buffer;
-      if (_enableColors_) _currentPrefix_ += "\033[0m";
+      contentStrBuffer += buffer;
+      if (_enableColors_) contentStrBuffer += "\033[0m";
     }
+    _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{SEVERITY}", contentStrBuffer);
+    contentStrBuffer = "";
 
-    // Filename and Line#
-    if (Logger::_prefixLevel_ >= Logger::PrefixLevel::DEBUG) {
-      _currentPrefix_ += " ";
-      if (_enableColors_) _currentPrefix_ += "\x1b[90m";
-      _currentPrefix_ += _currentFileName_;
-      _currentPrefix_ += ":";
-      _currentPrefix_ += std::to_string(_currentLineNumber_);
-      if (_enableColors_) _currentPrefix_ += "\033[0m";
+    // Remove extra spaces left by non-applied tags
+    _currentPrefix_ = Logger::removeRepeatedCharacters(_currentPrefix_, " ");
+
+    // cleanup
+    while(_currentPrefix_[_currentPrefix_.size()-1] == ' ') _currentPrefix_ = _currentPrefix_.substr(0, _currentPrefix_.size()-1);
+
+    // {USER_HEADER} -> can contain multiple spaces
+    if(not _userHeaderStr_.empty()){
+      if(_enableColors_ and _propagateColorsOnUserHeader_) contentStrBuffer += getTagColorStr(_currentLogLevel_);
+      contentStrBuffer += _userHeaderStr_;
+      if(_enableColors_ and _propagateColorsOnUserHeader_) contentStrBuffer += "\033[0m";
+      _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{USER_HEADER}", contentStrBuffer);
     }
-
-    if (Logger::_prefixLevel_ >= Logger::PrefixLevel::FULL){
-      _currentPrefix_ += " ";
-      if (_enableColors_) _currentPrefix_ += "\x1b[90m";
-      _currentPrefix_ += "(thread: ";
-      std::stringstream ss;
-      ss << std::this_thread::get_id();
-      _currentPrefix_ += ss.str();
-      _currentPrefix_ += ")";
-      if (_enableColors_) _currentPrefix_ += "\033[0m";
+    else{
+      _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{USER_HEADER}", contentStrBuffer);
+      _currentPrefix_ = Logger::removeRepeatedCharacters(_currentPrefix_, " ");
+      while(_currentPrefix_[0] == ' ') _currentPrefix_ = _currentPrefix_.substr(1, _currentPrefix_.size());
     }
+    contentStrBuffer = "";
 
+    // Add ": " to separate the header from the message
     if (not _currentPrefix_.empty()){
       _currentPrefix_ += ": ";
     }
@@ -390,6 +415,69 @@ namespace {
     return output_str;
   }
 
+  std::string Logger::replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_) {
+    std::string stripped_str = input_str_;
+    size_t index = 0;
+    while ((index = stripped_str.find(substr_to_look_for_, index)) != std::string::npos) {
+      stripped_str.replace(index, substr_to_look_for_.length(), substr_to_replace_);
+      index += substr_to_replace_.length();
+    }
+    return stripped_str;
+  }
+
+  std::string Logger::stripStringUnicode(const std::string &inputStr_){
+    std::string outputStr(inputStr_);
+
+    if(Logger::doesStringContainsSubstring(outputStr, "\033")){
+      // remove color
+      std::string tempStr;
+      auto splitOuputStr = Logger::splitString(outputStr, "\033");
+      for(const auto& sliceStr : splitOuputStr){
+        if(sliceStr.empty()) continue;
+        if(tempStr.empty()){
+          tempStr = sliceStr;
+          continue;
+        }
+        // look for a 'm' char that determines the end of the color code
+        bool mCharHasBeenFound = false;
+        for(const char& c : sliceStr){
+          if(not mCharHasBeenFound){
+            if(c == 'm'){
+              mCharHasBeenFound = true;
+            }
+          }
+          else{
+            tempStr += c;
+          }
+        }
+      }
+      outputStr = tempStr;
+    }
+
+    outputStr.erase(
+      remove_if(
+        outputStr.begin(), outputStr.end(),
+        [](const char& c){return !isprint( static_cast<unsigned char>( c ) );}
+      ),
+      outputStr.end()
+    );
+
+
+
+
+    return outputStr;
+  }
+
+  std::string Logger::removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_) {
+    std::string outStr = inputStr_;
+    std::string oldStr;
+    while(oldStr != outStr){
+      oldStr = outStr;
+      outStr = Logger::replaceSubstringInString(outStr, doubledChar_+doubledChar_, doubledChar_);
+    }
+    return outStr;
+  }
+
 
   // Private Members
   bool Logger::_enableColors_ = LOGGER_ENABLE_COLORS;
@@ -398,6 +486,7 @@ namespace {
   Logger::LogLevel Logger::_maxLogLevel_ = Logger::getLogLevel(LOGGER_MAX_LOG_LEVEL_PRINTED);
   Logger::PrefixLevel Logger::_prefixLevel_ = Logger::getPrefixLevel(LOGGER_PREFIX_LEVEL);
   std::string Logger::_userHeaderStr_;
+  std::string Logger::_prefixFormat_ = LOGGER_PREFIX_FORMAT;
 
   std::string Logger::_currentPrefix_;
   Logger::LogLevel Logger::_currentLogLevel_ = Logger::LogLevel::TRACE;
