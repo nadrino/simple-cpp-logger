@@ -236,6 +236,7 @@ namespace {
 
     // cleanup
     while(_currentPrefix_[_currentPrefix_.size()-1] == ' ') _currentPrefix_ = _currentPrefix_.substr(0, _currentPrefix_.size()-1);
+    while(_currentPrefix_[0] == ' ') _currentPrefix_ = _currentPrefix_.substr(1, _currentPrefix_.size());
 
     // {USER_HEADER} -> can contain multiple spaces
     if(not _userHeaderStr_.empty()){
