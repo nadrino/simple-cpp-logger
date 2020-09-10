@@ -462,9 +462,6 @@ namespace {
       outputStr.end()
     );
 
-
-
-
     return outputStr;
   }
 
