@@ -53,7 +53,7 @@ namespace LoggerUtils{
   template<typename ... Args> inline std::string formatString( const char *fmt_str, Args ... args );
 
   // Hardware Utils
-  int getTerminalWidth();
+  inline int getTerminalWidth();
 
 }
 

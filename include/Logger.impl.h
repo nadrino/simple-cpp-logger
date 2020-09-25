@@ -202,8 +202,8 @@ namespace LoggerUtils{
     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
   }
 
-// Hardware related tools
-  int getTerminalWidth(){
+  // Hardware related tools
+  inline int getTerminalWidth(){
     int outWith = 0;
 #if defined(_WIN32)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
