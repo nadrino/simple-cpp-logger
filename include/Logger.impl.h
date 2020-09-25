@@ -85,7 +85,7 @@ namespace LoggerUtils{
   };
 
 // String Utils
-  bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_){
+  inline bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_){
     if(substring_.size() > string_.size()) return false;
     if(ignoreCase_){
       string_ = toLowerCase(string_);
@@ -94,13 +94,13 @@ namespace LoggerUtils{
     if(string_.find(substring_) != std::string::npos) return true;
     else return false;
   }
-  std::string toLowerCase(std::string& inputStr_){
+  inline std::string toLowerCase(std::string& inputStr_){
     std::string output_str(inputStr_);
     std::transform(output_str.begin(), output_str.end(), output_str.begin(),
                    [](unsigned char c) { return std::tolower(c); });
     return output_str;
   }
-  std::string stripStringUnicode(const std::string &inputStr_){
+  inline std::string stripStringUnicode(const std::string &inputStr_){
     std::string outputStr(inputStr_);
 
     if(LoggerUtils::doesStringContainsSubstring(outputStr, "\033")){
@@ -139,7 +139,7 @@ namespace LoggerUtils{
 
     return outputStr;
   }
-  std::string repeatString(const std::string inputStr_, int amount_){
+  inline std::string repeatString(const std::string inputStr_, int amount_){
     std::string outputStr;
     if(amount_ <= 0) return outputStr;
     for(int i_count = 0 ; i_count < amount_ ; i_count++){
@@ -147,7 +147,7 @@ namespace LoggerUtils{
     }
     return outputStr;
   }
-  std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_) {
+  inline std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_) {
     std::string outStr = inputStr_;
     std::string oldStr;
     while(oldStr != outStr){
@@ -156,7 +156,7 @@ namespace LoggerUtils{
     }
     return outStr;
   }
-  std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_) {
+  inline std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_) {
     std::string stripped_str = input_str_;
     size_t index = 0;
     while ((index = stripped_str.find(substr_to_look_for_, index)) != std::string::npos) {
@@ -165,7 +165,7 @@ namespace LoggerUtils{
     }
     return stripped_str;
   }
-  std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_) {
+  inline std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_) {
 
     std::vector<std::string> output_splited_string;
 
@@ -194,7 +194,7 @@ namespace LoggerUtils{
     return output_splited_string;
 
   }
-  template<typename ... Args> std::string formatString( const char *fmt_str, Args ... args ) {
+  template<typename ... Args> inline std::string formatString( const char *fmt_str, Args ... args ) {
     size_t size = snprintf( nullptr, 0, fmt_str, args ... ) + 1; // Extra space for '\0'
     if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
     std::unique_ptr<char[]> buf( new char[ size ] );

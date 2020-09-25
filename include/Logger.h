@@ -40,20 +40,20 @@
 
 namespace LoggerUtils{
 
-class keepLastCharBuffer;
+  class keepLastCharBuffer;
 
-//! String Utils
-bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
-std::string toLowerCase(std::string& inputStr_);
-std::string stripStringUnicode(const std::string &inputStr_);
-std::string repeatString(std::string inputStr_, int amount_);
-std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_);
-std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_);
-std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_);
-template<typename ... Args> static std::string formatString( const char *fmt_str, Args ... args );
+  //! String Utils
+  inline bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
+  inline std::string toLowerCase(std::string& inputStr_);
+  inline std::string stripStringUnicode(const std::string &inputStr_);
+  inline std::string repeatString(std::string inputStr_, int amount_);
+  inline std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_);
+  inline std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_);
+  inline std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_);
+  template<typename ... Args> inline std::string formatString( const char *fmt_str, Args ... args );
 
-// Hardware Utils
-int getTerminalWidth();
+  // Hardware Utils
+  int getTerminalWidth();
 
 }
 
