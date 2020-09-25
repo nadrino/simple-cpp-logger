@@ -41,7 +41,7 @@
 
 namespace {
 
-  class Logger: public std::ostream {
+  class Logger {
 
   public:
 
