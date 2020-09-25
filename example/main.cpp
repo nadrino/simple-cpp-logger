@@ -136,6 +136,11 @@ int main(){
   std::cout << Logger::getPrefixString(LogWarning) << "Manual printout" << std::endl;
 
   Logger::quietLineJump();
+
+
+  LogInfo << "test";
+  std::cout << std::endl;
+  LogInfo << "And now ?" << std::endl;
 #endif
 
 
