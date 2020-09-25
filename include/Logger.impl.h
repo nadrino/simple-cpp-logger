@@ -343,8 +343,9 @@ namespace {
     else{
 
       // Clean the line
-      if(Logger::_cleanLineBeforePrint_ and getTerminalWidth() != 0){
-          _outputStream_ << "\r" << repeatString(" ", getTerminalWidth()-1) << "\r";
+      if(_doesLastLineIsFlushed_ and _cleanLineBeforePrint_ and getTerminalWidth() != 0){
+        _outputStream_ << "\r" << repeatString(" ", getTerminalWidth()-1) << "\r";
+        _doesLastLineIsFlushed_ = false;
       }
 
       // Start printing
@@ -358,6 +359,10 @@ namespace {
         _outputStream_ << formatString("%s", getTagColorStr(LogLevel::FATAL).c_str());
 
       _outputStream_ << formattedString;
+
+      if(formattedString[formattedString.size()-1] == '\r'){
+          _doesLastLineIsFlushed_ = true;
+      }
 
       if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
         _outputStream_ << formatString("\033[0m");
@@ -561,6 +566,7 @@ namespace {
   bool Logger::_isNewLine_ = true;
   std::ostream& Logger::_outputStream_ = std::cout;
   std::mutex Logger::_loggerMutex_;
+  bool Logger::_doesLastLineIsFlushed_ = false;
 
 }
 

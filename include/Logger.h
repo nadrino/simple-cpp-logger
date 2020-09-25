@@ -125,6 +125,7 @@ namespace {
     static bool _isNewLine_;
     static std::ostream& _outputStream_;
     static std::mutex _loggerMutex_;
+    static bool _doesLastLineIsFlushed_;
 
     // parameters
     static bool _enableColors_;
