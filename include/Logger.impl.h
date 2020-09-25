@@ -21,6 +21,200 @@
 #include <iomanip>
 #include <algorithm>
 
+#if defined(_WIN32)
+// Windows
+#include <windows.h>
+#include <psapi.h>
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <Windows.h>
+#elif defined(__APPLE__) && defined(__MACH__)
+// MacOS
+#include <unistd.h>
+#include <sys/resource.h>
+#include <mach/mach.h>
+#include <sys/ioctl.h>
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+// Linux
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <stdio.h>
+#include <sys/ioctl.h>
+
+#elif (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__)))
+// AIX and Solaris
+#include <unistd.h>
+#include <sys/resource.h>
+#include <fcntl.h>
+#include <procfs.h>
+#include <sys/ioctl.h>
+
+#else
+// Unsupported
+#endif
+namespace LoggerUtils{
+
+class keepLastCharOutbuf : public std::streambuf {
+
+public:
+    explicit keepLastCharOutbuf(std::streambuf* buf) : buf(buf), last_char(traits_type::eof()) {
+        // no buffering, overflow on every char
+        setp(nullptr, nullptr);
+    }
+    char get_last_char() const { return last_char; }
+
+    int_type overflow(int_type c) override {
+        buf->sputc(c);
+        last_char = c;
+        return c;
+    }
+
+private:
+    std::streambuf* buf;
+    char last_char;
+};
+
+// String Utils
+bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_){
+    if(substring_.size() > string_.size()) return false;
+    if(ignoreCase_){
+        string_ = toLowerCase(string_);
+        substring_ = toLowerCase(substring_);
+    }
+    if(string_.find(substring_) != std::string::npos) return true;
+    else return false;
+}
+std::string toLowerCase(std::string& inputStr_){
+    std::string output_str(inputStr_);
+    std::transform(output_str.begin(), output_str.end(), output_str.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    return output_str;
+}
+std::string stripStringUnicode(const std::string &inputStr_){
+    std::string outputStr(inputStr_);
+
+    if(LoggerUtils::doesStringContainsSubstring(outputStr, "\033")){
+        // remove color
+        std::string tempStr;
+        auto splitOuputStr = LoggerUtils::splitString(outputStr, "\033");
+        for(const auto& sliceStr : splitOuputStr){
+            if(sliceStr.empty()) continue;
+            if(tempStr.empty()){
+                tempStr = sliceStr;
+                continue;
+            }
+            // look for a 'm' char that determines the end of the color code
+            bool mCharHasBeenFound = false;
+            for(const char& c : sliceStr){
+                if(not mCharHasBeenFound){
+                    if(c == 'm'){
+                        mCharHasBeenFound = true;
+                    }
+                }
+                else{
+                    tempStr += c;
+                }
+            }
+        }
+        outputStr = tempStr;
+    }
+
+    outputStr.erase(
+        remove_if(
+            outputStr.begin(), outputStr.end(),
+            [](const char& c){return !isprint( static_cast<unsigned char>( c ) );}
+        ),
+        outputStr.end()
+    );
+
+    return outputStr;
+}
+std::string repeatString(const std::string inputStr_, int amount_){
+    std::string outputStr;
+    if(amount_ <= 0) return outputStr;
+    for(int i_count = 0 ; i_count < amount_ ; i_count++){
+        outputStr += inputStr_;
+    }
+    return outputStr;
+}
+std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_) {
+    std::string outStr = inputStr_;
+    std::string oldStr;
+    while(oldStr != outStr){
+        oldStr = outStr;
+        outStr = LoggerUtils::replaceSubstringInString(outStr, doubledChar_+doubledChar_, doubledChar_);
+    }
+    return outStr;
+}
+std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_) {
+    std::string stripped_str = input_str_;
+    size_t index = 0;
+    while ((index = stripped_str.find(substr_to_look_for_, index)) != std::string::npos) {
+        stripped_str.replace(index, substr_to_look_for_.length(), substr_to_replace_);
+        index += substr_to_replace_.length();
+    }
+    return stripped_str;
+}
+std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_) {
+
+    std::vector<std::string> output_splited_string;
+
+    const char *src = input_string_.c_str();
+    const char *next = src;
+
+    std::string out_string_piece;
+
+    while ((next = std::strstr(src, delimiter_.c_str())) != nullptr) {
+        out_string_piece = "";
+        while (src != next) {
+            out_string_piece += *src++;
+        }
+        output_splited_string.emplace_back(out_string_piece);
+        /* Skip the delimiter_ */
+        src += delimiter_.size();
+    }
+
+    /* Handle the last token */
+    out_string_piece = "";
+    while (*src != '\0')
+        out_string_piece += *src++;
+
+    output_splited_string.emplace_back(out_string_piece);
+
+    return output_splited_string;
+
+}
+template<typename ... Args> std::string formatString( const char *fmt_str, Args ... args ) {
+    size_t size = snprintf( nullptr, 0, fmt_str, args ... ) + 1; // Extra space for '\0'
+    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
+    std::unique_ptr<char[]> buf( new char[ size ] );
+    snprintf( buf.get(), size, fmt_str, args ... );
+    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+}
+
+// Hardware related tools
+int getTerminalWidth(){
+    int outWith = 0;
+#if defined(_WIN32)
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+      GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+      outWith = (int)(csbi.dwSize.X);
+  //    outWith = (int)(csbi.dwSize.Y);
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__) \
+    || (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__))) \
+    || (defined(__APPLE__) && defined(__MACH__))
+    struct winsize w;
+    ioctl(fileno(stdout), TIOCGWINSZ, &w);
+    outWith = (int)(w.ws_col);
+    //    outWith = (int)(w.ws_row);
+#endif // Windows/Linux
+    return outWith;
+}
+
+
+
+}
 
 namespace {
 
@@ -132,10 +326,12 @@ namespace {
 
   // Macro-Related Methods
   Logger::Logger(LogLevel level, char const *file, int line) {
+    if (_lastCharKeeper_ == nullptr)
+        hookStreamBuffer();
     if (level != _currentLogLevel_) _isNewLine_ = true; // force reprinting the prefix if the verbosity has changed
 
     _currentLogLevel_ = level;
-    _currentFileName_ = Logger::splitString(file, "/").back();
+    _currentFileName_ = LoggerUtils::splitString(file, "/").back();
     _currentLineNumber_ = line;
   }
 
@@ -186,7 +382,7 @@ namespace {
     // _prefixFormat_ = "{TIME} {USER_HEADER} {SEVERITY} {FILELINE} {THREAD}";
 
     // Reset the prefix
-    _currentPrefix_ = Logger::stripStringUnicode(_prefixFormat_); // remove potential colors
+    _currentPrefix_ = LoggerUtils::stripStringUnicode(_prefixFormat_); // remove potential colors
     std::string contentStrBuffer;
 
     // "{THREAD}"
@@ -195,7 +391,7 @@ namespace {
       ss << "\x1b[90m(thread: " << std::this_thread::get_id() << ")\033[0m";
       contentStrBuffer = ss.str();
     }
-    _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{THREAD}", contentStrBuffer);
+    _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{THREAD}", contentStrBuffer);
     contentStrBuffer = "";
 
     // {FILE} and {LINE}
@@ -206,7 +402,7 @@ namespace {
       contentStrBuffer += std::to_string(_currentLineNumber_);
       contentStrBuffer += "\033[0m";
     }
-    _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{FILELINE}", contentStrBuffer);
+    _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{FILELINE}", contentStrBuffer);
     contentStrBuffer = "";
 
     // {TIME}
@@ -217,7 +413,7 @@ namespace {
       ss << std::put_time(&timeInfo, "%H:%M:%S");
       contentStrBuffer = ss.str();
     }
-    _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{TIME}", contentStrBuffer);
+    _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{TIME}", contentStrBuffer);
     contentStrBuffer = "";
 
     // {SEVERITY}
@@ -228,11 +424,11 @@ namespace {
       contentStrBuffer += buffer;
       if (_enableColors_) contentStrBuffer += "\033[0m";
     }
-    _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{SEVERITY}", contentStrBuffer);
+    _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{SEVERITY}", contentStrBuffer);
     contentStrBuffer = "";
 
     // Remove extra spaces left by non-applied tags
-    _currentPrefix_ = Logger::removeRepeatedCharacters(_currentPrefix_, " ");
+    _currentPrefix_ = LoggerUtils::removeRepeatedCharacters(_currentPrefix_, " ");
 
     // cleanup
     while(_currentPrefix_[_currentPrefix_.size()-1] == ' ') _currentPrefix_ = _currentPrefix_.substr(0, _currentPrefix_.size()-1);
@@ -243,11 +439,11 @@ namespace {
       if(_enableColors_ and _propagateColorsOnUserHeader_) contentStrBuffer += getTagColorStr(_currentLogLevel_);
       contentStrBuffer += _userHeaderStr_;
       if(_enableColors_ and _propagateColorsOnUserHeader_) contentStrBuffer += "\033[0m";
-      _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{USER_HEADER}", contentStrBuffer);
+      _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{USER_HEADER}", contentStrBuffer);
     }
     else{
-      _currentPrefix_ = Logger::replaceSubstringInString(_currentPrefix_, "{USER_HEADER}", contentStrBuffer);
-      _currentPrefix_ = Logger::removeRepeatedCharacters(_currentPrefix_, " ");
+      _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{USER_HEADER}", contentStrBuffer);
+      _currentPrefix_ = LoggerUtils::removeRepeatedCharacters(_currentPrefix_, " ");
       while(_currentPrefix_[0] == ' ') _currentPrefix_ = _currentPrefix_.substr(1, _currentPrefix_.size());
     }
     contentStrBuffer = "";
@@ -307,6 +503,24 @@ namespace {
     }
   }
 
+  void Logger::hookStreamBuffer(){
+    std::streambuf* cbuf = _outputStream_.rdbuf();   // back up cout's streambuf
+    _outputStream_.flush();
+    delete _lastCharKeeper_;
+    _lastCharKeeper_ = new LoggerUtils::keepLastCharOutbuf(cbuf);
+    _outputStream_.rdbuf(_lastCharKeeper_);          // reassign your streambuf to cout
+  }
+
+  static char getLastCharOutBuf(){
+
+      std::streambuf* cbuf = std::cout.rdbuf();
+      char last_char(std::streambuf::traits_type::eof());
+//      std::streambuf::setp(0, 0);
+
+
+
+  }
+
   template<typename ... Args> void Logger::printFormat(const char *fmt_str, Args ... args ){
 
     std::string formattedString;
@@ -315,13 +529,11 @@ namespace {
     if(sizeof...(Args) == 0) formattedString = fmt_str;
     else formattedString = formatString(fmt_str, std::forward<Args>(args)...);
 
-
-
     // Check if there is multiple lines
-    if( doesStringContainsSubstring(formattedString, "\n") ) {
+    if( LoggerUtils::doesStringContainsSubstring(formattedString, "\n") ) {
 
       // Print each line individually
-      auto slicedString = splitString(formattedString, "\n");
+      auto slicedString = LoggerUtils::splitString(formattedString, "\n");
       for (int i_line = 0; i_line < int(slicedString.size()); i_line++) {
 
         // If the last line is empty, don't print since a \n will be added.
@@ -347,9 +559,8 @@ namespace {
     else{
 
       // Clean the line
-      if(_doesLastLineIsFlushed_ and _cleanLineBeforePrint_ and getTerminalWidth() != 0){
-        _outputStream_ << repeatString(" ", getTerminalWidth()-1) << "\r";
-        _doesLastLineIsFlushed_ = false;
+      if(_lastCharKeeper_->get_last_char() == '\r' and _cleanLineBeforePrint_ and LoggerUtils::getTerminalWidth() != 0){
+        _outputStream_ << LoggerUtils::repeatString(" ", LoggerUtils::getTerminalWidth()-1) << "\r";
       }
 
       // Start printing
@@ -360,196 +571,14 @@ namespace {
       }
 
       if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
-        _outputStream_ << formatString("%s", getTagColorStr(LogLevel::FATAL).c_str());
+        _outputStream_ << LoggerUtils::formatString("%s", getTagColorStr(LogLevel::FATAL).c_str());
 
       _outputStream_ << formattedString;
 
-      if(formattedString.back() == '\r'){
-          _doesLastLineIsFlushed_ = true;
-      }
-
       if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
-        _outputStream_ << formatString("\033[0m");
+        _outputStream_ << LoggerUtils::formatString("\033[0m");
     } // else multiline
-  }
 
-
-  // Generic Functions
-  std::vector<std::string> Logger::splitString(const std::string& input_string_, const std::string& delimiter_) {
-
-    std::vector<std::string> output_splited_string;
-
-    const char *src = input_string_.c_str();
-    const char *next = src;
-
-    std::string out_string_piece;
-
-    while ((next = std::strstr(src, delimiter_.c_str())) != nullptr) {
-      out_string_piece = "";
-      while (src != next) {
-        out_string_piece += *src++;
-      }
-      output_splited_string.emplace_back(out_string_piece);
-      /* Skip the delimiter_ */
-      src += delimiter_.size();
-    }
-
-    /* Handle the last token */
-    out_string_piece = "";
-    while (*src != '\0')
-      out_string_piece += *src++;
-
-    output_splited_string.emplace_back(out_string_piece);
-
-    return output_splited_string;
-
-  }
-
-  template<typename ... Args>
-  std::string Logger::formatString( const char *fmt_str, Args ... args )  {
-    size_t size = snprintf( nullptr, 0, fmt_str, args ... ) + 1; // Extra space for '\0'
-    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
-    std::unique_ptr<char[]> buf( new char[ size ] );
-    snprintf( buf.get(), size, fmt_str, args ... );
-    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-  }
-
-  bool Logger::doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_){
-    if(substring_.size() > string_.size()) return false;
-    if(ignoreCase_){
-      string_ = toLowerCase(string_);
-      substring_ = toLowerCase(substring_);
-    }
-    if(string_.find(substring_) != std::string::npos) return true;
-    else return false;
-  }
-
-  std::string Logger::toLowerCase(std::string& inputStr_){
-    std::string output_str(inputStr_);
-    std::transform(output_str.begin(), output_str.end(), output_str.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
-    return output_str;
-  }
-
-  std::string Logger::replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_) {
-    std::string stripped_str = input_str_;
-    size_t index = 0;
-    while ((index = stripped_str.find(substr_to_look_for_, index)) != std::string::npos) {
-      stripped_str.replace(index, substr_to_look_for_.length(), substr_to_replace_);
-      index += substr_to_replace_.length();
-    }
-    return stripped_str;
-  }
-
-  std::string Logger::stripStringUnicode(const std::string &inputStr_){
-    std::string outputStr(inputStr_);
-
-    if(Logger::doesStringContainsSubstring(outputStr, "\033")){
-      // remove color
-      std::string tempStr;
-      auto splitOuputStr = Logger::splitString(outputStr, "\033");
-      for(const auto& sliceStr : splitOuputStr){
-        if(sliceStr.empty()) continue;
-        if(tempStr.empty()){
-          tempStr = sliceStr;
-          continue;
-        }
-        // look for a 'm' char that determines the end of the color code
-        bool mCharHasBeenFound = false;
-        for(const char& c : sliceStr){
-          if(not mCharHasBeenFound){
-            if(c == 'm'){
-              mCharHasBeenFound = true;
-            }
-          }
-          else{
-            tempStr += c;
-          }
-        }
-      }
-      outputStr = tempStr;
-    }
-
-    outputStr.erase(
-      remove_if(
-        outputStr.begin(), outputStr.end(),
-        [](const char& c){return !isprint( static_cast<unsigned char>( c ) );}
-      ),
-      outputStr.end()
-    );
-
-    return outputStr;
-  }
-
-  std::string Logger::removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_) {
-    std::string outStr = inputStr_;
-    std::string oldStr;
-    while(oldStr != outStr){
-      oldStr = outStr;
-      outStr = Logger::replaceSubstringInString(outStr, doubledChar_+doubledChar_, doubledChar_);
-    }
-    return outStr;
-  }
-
-  std::string Logger::repeatString(const std::string inputStr_, int amount_){
-    std::string outputStr;
-    if(amount_ <= 0) return outputStr;
-    for(int i_count = 0 ; i_count < amount_ ; i_count++){
-        outputStr += inputStr_;
-    }
-    return outputStr;
-  }
-
-  // Hardware related tools
-#if defined(_WIN32)
-// Windows
-#include <windows.h>
-#include <psapi.h>
-#define WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
-#include <Windows.h>
-#elif defined(__APPLE__) && defined(__MACH__)
-// MacOS
-#include <unistd.h>
-#include <sys/resource.h>
-#include <mach/mach.h>
-#include <sys/ioctl.h>
-#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
-// Linux
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <stdio.h>
-#include <sys/ioctl.h>
-
-#elif (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__)))
-// AIX and Solaris
-#include <unistd.h>
-#include <sys/resource.h>
-#include <fcntl.h>
-#include <procfs.h>
-#include <sys/ioctl.h>
-
-#else
-// Unsupported
-#endif
-  int Logger::getTerminalWidth()
-  {
-      int outWith = 0;
-#if defined(_WIN32)
-      CONSOLE_SCREEN_BUFFER_INFO csbi;
-      GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-      outWith = (int)(csbi.dwSize.X);
-  //    outWith = (int)(csbi.dwSize.Y);
-#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__) \
-    || (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__))) \
-    || (defined(__APPLE__) && defined(__MACH__))
-      struct winsize w;
-      ioctl(fileno(stdout), TIOCGWINSZ, &w);
-      outWith = (int)(w.ws_col);
-  //    outWith = (int)(w.ws_row);
-#endif // Windows/Linux
-      return outWith;
   }
 
 
@@ -571,6 +600,7 @@ namespace {
   std::ostream& Logger::_outputStream_ = std::cout;
   std::mutex Logger::_loggerMutex_;
   bool Logger::_doesLastLineIsFlushed_ = false;
+  LoggerUtils::keepLastCharOutbuf* _lastCharKeeper_ = nullptr;
 
 }
 

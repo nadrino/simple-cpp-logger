@@ -38,6 +38,25 @@
 #define LogDebug       (Logger{Logger::LogLevel::DEBUG,    __FILE__, __LINE__})
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILE__, __LINE__})
 
+namespace LoggerUtils{
+
+class keepLastCharOutbuf;
+
+//! String Utils
+bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
+std::string toLowerCase(std::string& inputStr_);
+std::string stripStringUnicode(const std::string &inputStr_);
+std::string repeatString(std::string inputStr_, int amount_);
+std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_);
+std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_);
+std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_);
+template<typename ... Args> static std::string formatString( const char *fmt_str, Args ... args );
+
+// Hardware Utils
+static int getTerminalWidth();
+
+}
+
 
 namespace {
 
@@ -99,21 +118,12 @@ namespace {
 
     static void buildCurrentPrefix();
 
+    static void hookStreamBuffer();
     static std::string getTagColorStr(LogLevel selectedLogLevel_);
     static std::string getTagStr(LogLevel selectedLogLevel_);
 
     template<typename ... Args> static void printFormat(const char *fmt_str, Args ... args );
 
-    // Generic Functions
-    static std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_);
-    template<typename ... Args> static std::string formatString( const char *fmt_str, Args ... args );
-    static bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
-    static std::string toLowerCase(std::string& inputStr_);
-    static std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_);
-    static std::string stripStringUnicode(const std::string &inputStr_);
-    static std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_);
-    static std::string repeatString(const std::string inputStr_, int amount_);
-    static int getTerminalWidth();
 
   private:
 
@@ -126,6 +136,7 @@ namespace {
     static std::ostream& _outputStream_;
     static std::mutex _loggerMutex_;
     static bool _doesLastLineIsFlushed_;
+    static LoggerUtils::keepLastCharOutbuf* _lastCharKeeper_;
 
     // parameters
     static bool _enableColors_;
