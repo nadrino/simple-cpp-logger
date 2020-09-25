@@ -310,10 +310,9 @@ namespace {
   template<typename ... Args> void Logger::printFormat(const char *fmt_str, Args ... args ){
 
     std::string formattedString;
-    std::string unformattedString(fmt_str);
 
     // If there no extra args, string formatting is not needed
-    if(sizeof...(Args) == 0) formattedString = unformattedString;
+    if(sizeof...(Args) == 0) formattedString = fmt_str;
     else formattedString = formatString(fmt_str, std::forward<Args>(args)...);
 
 
@@ -349,9 +348,6 @@ namespace {
 
       // Clean the line
       if(_doesLastLineIsFlushed_ and _cleanLineBeforePrint_ and getTerminalWidth() != 0){
-          _outputStream_ <<std::endl;
-          _outputStream_ <<std::endl;
-          _outputStream_ <<std::endl;
         _outputStream_ << repeatString(" ", getTerminalWidth()-1) << "\r";
         _doesLastLineIsFlushed_ = false;
       }
@@ -368,7 +364,7 @@ namespace {
 
       _outputStream_ << formattedString;
 
-      if(unformattedString.back() == '\r'){
+      if(formattedString.back() == '\r'){
           _doesLastLineIsFlushed_ = true;
       }
 
