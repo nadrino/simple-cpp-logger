@@ -112,7 +112,8 @@ namespace {
     static std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_);
     static std::string stripStringUnicode(const std::string &inputStr_);
     static std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_);
-
+    static std::string repeatString(const std::string inputStr_, int amount_);
+    static int getTerminalWidth();
 
   private:
 
@@ -129,6 +130,7 @@ namespace {
     static bool _enableColors_;
     static bool _disablePrintfLineJump_;
     static bool _propagateColorsOnUserHeader_;
+    static bool _cleanLineBeforePrint_;
     static LogLevel _maxLogLevel_;
     static PrefixLevel _prefixLevel_;
     static std::string _userHeaderStr_;

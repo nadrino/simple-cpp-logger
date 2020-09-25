@@ -342,6 +342,12 @@ namespace {
     } // If multiline
     else{
 
+      // Clean the line
+      if(Logger::_cleanLineBeforePrint_ and getTerminalWidth() != 0){
+          _outputStream_ << "\r" << repeatString(" ", getTerminalWidth()-1) << "\r";
+      }
+
+      // Start printing
       if(_isNewLine_){
         Logger::buildCurrentPrefix();
         _outputStream_ << _currentPrefix_;
@@ -476,10 +482,72 @@ namespace {
     return outStr;
   }
 
+  std::string Logger::repeatString(const std::string inputStr_, int amount_){
+    std::string outputStr;
+    if(amount_ <= 0) return outputStr;
+    for(int i_count = 0 ; i_count < amount_ ; i_count++){
+        outputStr += inputStr_;
+    }
+    return outputStr;
+  }
+
+  // Hardware related tools
+#if defined(_WIN32)
+// Windows
+#include <windows.h>
+#include <psapi.h>
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <Windows.h>
+#elif defined(__APPLE__) && defined(__MACH__)
+// MacOS
+#include <unistd.h>
+#include <sys/resource.h>
+#include <mach/mach.h>
+#include <sys/ioctl.h>
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+// Linux
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <stdio.h>
+#include <sys/ioctl.h>
+
+#elif (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__)))
+// AIX and Solaris
+#include <unistd.h>
+#include <sys/resource.h>
+#include <fcntl.h>
+#include <procfs.h>
+#include <sys/ioctl.h>
+
+#else
+// Unsupported
+#endif
+  int Logger::getTerminalWidth()
+  {
+      int outWith = 0;
+#if defined(_WIN32)
+      CONSOLE_SCREEN_BUFFER_INFO csbi;
+      GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+      outWith = (int)(csbi.dwSize.X);
+  //    outWith = (int)(csbi.dwSize.Y);
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__) \
+    || (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__))) \
+    || (defined(__APPLE__) && defined(__MACH__))
+      struct winsize w;
+      ioctl(fileno(stdout), TIOCGWINSZ, &w);
+      outWith = (int)(w.ws_col);
+  //    outWith = (int)(w.ws_row);
+#endif // Windows/Linux
+      return outWith;
+  }
+
 
   // Private Members
   bool Logger::_enableColors_ = LOGGER_ENABLE_COLORS;
   bool Logger::_propagateColorsOnUserHeader_ = LOGGER_ENABLE_COLORS_ON_USER_HEADER;
+  bool Logger::_cleanLineBeforePrint_ = true;
   bool Logger::_disablePrintfLineJump_ = false;
   Logger::LogLevel Logger::_maxLogLevel_ = Logger::getLogLevel(LOGGER_MAX_LOG_LEVEL_PRINTED);
   Logger::PrefixLevel Logger::_prefixLevel_ = Logger::getPrefixLevel(LOGGER_PREFIX_LEVEL);
