@@ -562,7 +562,7 @@ namespace {
       }
 
       // Start printing
-      if(_isNewLine_){
+      if(_isNewLine_ or LoggerUtils::_lastCharKeeper_.getLastChar() == '\n'){
         Logger::buildCurrentPrefix();
         _outputStream_ << _currentPrefix_;
         _isNewLine_ = false;
