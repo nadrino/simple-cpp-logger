@@ -40,7 +40,7 @@
 
 namespace LoggerUtils{
 
-class keepLastCharOutbuf;
+class keepLastCharBuffer;
 
 //! String Utils
 bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
@@ -53,7 +53,7 @@ std::vector<std::string> splitString(const std::string& input_string_, const std
 template<typename ... Args> static std::string formatString( const char *fmt_str, Args ... args );
 
 // Hardware Utils
-static int getTerminalWidth();
+int getTerminalWidth();
 
 }
 
@@ -135,8 +135,6 @@ namespace {
     static bool _isNewLine_;
     static std::ostream& _outputStream_;
     static std::mutex _loggerMutex_;
-    static bool _doesLastLineIsFlushed_;
-    static LoggerUtils::keepLastCharOutbuf* _lastCharKeeper_;
 
     // parameters
     static bool _enableColors_;
