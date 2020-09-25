@@ -527,7 +527,7 @@ namespace {
 
     // If there no extra args, string formatting is not needed
     if(sizeof...(Args) == 0) formattedString = fmt_str;
-    else formattedString = formatString(fmt_str, std::forward<Args>(args)...);
+    else formattedString = LoggerUtils::formatString(fmt_str, std::forward<Args>(args)...);
 
     // Check if there is multiple lines
     if( LoggerUtils::doesStringContainsSubstring(formattedString, "\n") ) {
