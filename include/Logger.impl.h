@@ -511,16 +511,6 @@ namespace {
     _outputStream_.rdbuf(_lastCharKeeper_);          // reassign your streambuf to cout
   }
 
-  static char getLastCharOutBuf(){
-
-      std::streambuf* cbuf = std::cout.rdbuf();
-      char last_char(std::streambuf::traits_type::eof());
-//      std::streambuf::setp(0, 0);
-
-
-
-  }
-
   template<typename ... Args> void Logger::printFormat(const char *fmt_str, Args ... args ){
 
     std::string formattedString;
