@@ -310,8 +310,13 @@ namespace {
   template<typename ... Args> void Logger::printFormat(const char *fmt_str, Args ... args ){
 
     std::string formattedString;
-    if(sizeof...(Args) == 0) formattedString = fmt_str; // If there no extra args, string formatting is not needed
+    std::string unformattedString(fmt_str);
+
+    // If there no extra args, string formatting is not needed
+    if(sizeof...(Args) == 0) formattedString = unformattedString;
     else formattedString = formatString(fmt_str, std::forward<Args>(args)...);
+
+
 
     // Check if there is multiple lines
     if( doesStringContainsSubstring(formattedString, "\n") ) {
@@ -344,7 +349,10 @@ namespace {
 
       // Clean the line
       if(_doesLastLineIsFlushed_ and _cleanLineBeforePrint_ and getTerminalWidth() != 0){
-        _outputStream_ << "\r" << repeatString(" ", getTerminalWidth()-1) << "\r";
+          _outputStream_ <<std::endl;
+          _outputStream_ <<std::endl;
+          _outputStream_ <<std::endl;
+        _outputStream_ << repeatString(" ", getTerminalWidth()-1) << "\r";
         _doesLastLineIsFlushed_ = false;
       }
 
@@ -360,7 +368,7 @@ namespace {
 
       _outputStream_ << formattedString;
 
-      if(formattedString[formattedString.size()-1] == '\r'){
+      if(unformattedString.back() == '\r'){
           _doesLastLineIsFlushed_ = true;
       }
 
