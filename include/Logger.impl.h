@@ -221,7 +221,7 @@ namespace LoggerUtils{
     return outWith;
   }
 
-  keepLastCharBuffer _lastCharKeeper_;
+  static keepLastCharBuffer _lastCharKeeper_;
 
 }
 
