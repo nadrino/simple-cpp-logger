@@ -30,6 +30,10 @@
 #define LOGGER_PREFIX_FORMAT "{TIME} {USER_HEADER} {SEVERITY} {FILELINE} {THREAD}"
 #endif
 
+#ifndef LOGGER_CLEAR_LINE_BEFORE_PRINT
+#define LOGGER_CLEAR_LINE_BEFORE_PRINT 0
+#endif
+
 #define LogFatal       (Logger{Logger::LogLevel::FATAL,    __FILE__, __LINE__})
 #define LogError       (Logger{Logger::LogLevel::ERROR,    __FILE__, __LINE__})
 #define LogAlert       (Logger{Logger::LogLevel::ALERT,    __FILE__, __LINE__})

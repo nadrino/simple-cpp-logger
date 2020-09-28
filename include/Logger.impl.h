@@ -587,7 +587,7 @@ namespace {
   // Private Members
   bool Logger::_enableColors_ = LOGGER_ENABLE_COLORS;
   bool Logger::_propagateColorsOnUserHeader_ = LOGGER_ENABLE_COLORS_ON_USER_HEADER;
-  bool Logger::_cleanLineBeforePrint_ = true;
+  bool Logger::_cleanLineBeforePrint_ = LOGGER_CLEAR_LINE_BEFORE_PRINT;
   bool Logger::_disablePrintfLineJump_ = false;
   Logger::LogLevel Logger::_maxLogLevel_ = Logger::getLogLevel(LOGGER_MAX_LOG_LEVEL_PRINTED);
   Logger::PrefixLevel Logger::_prefixLevel_ = Logger::getPrefixLevel(LOGGER_PREFIX_LEVEL);
