@@ -71,6 +71,11 @@ namespace LoggerUtils{
     }
     char getLastChar() const { return _lastChar_; }
     bool getIsInitialized() const { return _isInitialized_; }
+    size_t getBufferSize() const {
+        std::ostringstream ss;
+        ss << _streamBuffer_;
+        return ss.str().size();
+    }
 
     int_type overflow(int_type c) override {
       _streamBuffer_->sputc(c);
@@ -557,8 +562,11 @@ namespace {
     else{
 
       // Clean the line
-      if(LoggerUtils::_lastCharKeeper_.getLastChar() == '\r' and _cleanLineBeforePrint_ and LoggerUtils::getTerminalWidth() != 0){
-        _outputStream_ << LoggerUtils::repeatString(" ", LoggerUtils::getTerminalWidth()-1) << "\r";
+      if( LoggerUtils::_lastCharKeeper_.getLastChar() == '\r'
+          and _cleanLineBeforePrint_
+          and LoggerUtils::getTerminalWidth() != 0
+         ){
+        _outputStream_ << LoggerUtils::repeatString(" ", LoggerUtils::_lastCharKeeper_.getBufferSize()) << "\r";
       }
 
       // Start printing
