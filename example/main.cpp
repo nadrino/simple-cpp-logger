@@ -135,12 +135,15 @@ int main(){
 
   std::cout << Logger::getPrefixString(LogWarning) << "Manual printout" << std::endl;
 
-  Logger::quietLineJump();
-
+  LogInfo << "line that should not be seen..?\r";
+  LogInfo << "overriding prev line" << std::endl;
 
   LogInfo << "test";
   std::cout << std::endl;
   LogInfo << "And now ?" << std::endl;
+
+  Logger::quietLineJump();
+
 #endif
 
 
