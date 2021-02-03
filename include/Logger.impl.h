@@ -382,7 +382,6 @@ namespace {
     return *this;
   }
 
-
   // Protected Methods
   void Logger::buildCurrentPrefix() {
 
