@@ -8,6 +8,7 @@
 
 #include <string>
 #include <mutex>
+#include <vector>
 
 
 #ifndef LOGGER_MAX_LOG_LEVEL_PRINTED
