@@ -16,7 +16,7 @@
 #endif
 
 #ifndef LOGGER_PREFIX_LEVEL
-#define LOGGER_PREFIX_LEVEL   1
+#define LOGGER_PREFIX_LEVEL   2
 #endif
 
 #ifndef LOGGER_ENABLE_COLORS
@@ -35,27 +35,31 @@
 #define LOGGER_CLEAR_LINE_BEFORE_PRINT 0
 #endif
 
-#define LogFatal       (Logger{Logger::LogLevel::FATAL,    __FILE__, __LINE__})
-#define LogError       (Logger{Logger::LogLevel::ERROR,    __FILE__, __LINE__})
-#define LogAlert       (Logger{Logger::LogLevel::ALERT,    __FILE__, __LINE__})
-#define LogWarning     (Logger{Logger::LogLevel::WARNING,  __FILE__, __LINE__})
-#define LogInfo        (Logger{Logger::LogLevel::INFO,     __FILE__, __LINE__})
-#define LogDebug       (Logger{Logger::LogLevel::DEBUG,    __FILE__, __LINE__})
-#define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILE__, __LINE__})
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
+#define LogFatal       (Logger{Logger::LogLevel::FATAL,    __FILENAME__, __LINE__})
+#define LogError       (Logger{Logger::LogLevel::ERROR,    __FILENAME__, __LINE__})
+#define LogAlert       (Logger{Logger::LogLevel::ALERT,    __FILENAME__, __LINE__})
+#define LogWarning     (Logger{Logger::LogLevel::WARNING,  __FILENAME__, __LINE__})
+#define LogInfo        (Logger{Logger::LogLevel::INFO,     __FILENAME__, __LINE__})
+#define LogDebug       (Logger{Logger::LogLevel::DEBUG,    __FILENAME__, __LINE__})
+#define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILENAME__, __LINE__})
+
 
 namespace LoggerUtils{
 
-  class keepLastCharBuffer;
+  class LastCharBuffer;
 
   //! String Utils
   inline bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
   inline std::string toLowerCase(std::string& inputStr_);
   inline std::string stripStringUnicode(const std::string &inputStr_);
-  inline std::string repeatString(std::string inputStr_, int amount_);
-  inline std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_);
-  inline std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_);
+  inline std::string repeatString(const std::string &inputStr_, int amount_);
+  inline std::string removeRepeatedCharacters(const std::string &inputStr_, const std::string &doubledChar_);
+  inline std::string replaceSubstringInString(const std::string &input_str_, const std::string &substr_to_look_for_, const std::string &substr_to_replace_);
   inline std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_);
-  template<typename ... Args> inline std::string formatString( const char *fmt_str, Args ... args );
+  inline std::string formatString( const std::string& strToFormat_ ); // 0 args overrider
+  template<typename ... Args> inline std::string formatString( const std::string& strToFormat_, const Args& ... args );
 
   // Hardware Utils
   inline int getTerminalWidth();
@@ -92,12 +96,10 @@ namespace {
     static void setEnableColors(bool enableColors_);
     static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
     static void setPrefixLevel(PrefixLevel prefixLevel_);
-    static void setUserHeaderStr(std::string userHeaderStr_);
-    static void setPrefixFormat(std::string prefixFormat_);
+    static void setUserHeaderStr(const std::string &userHeaderStr_);
+    static void setPrefixFormat(const std::string &prefixFormat_);
 
     //! Getters
-    static LogLevel getLogLevel(int logLevelInt_);
-    static PrefixLevel getPrefixLevel(int prefixLevelInt_);
     static int getMaxLogLevelInt();
     static LogLevel getMaxLogLevel();
     static std::string getPrefixString();
@@ -109,7 +111,7 @@ namespace {
 
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
-    Logger(LogLevel level, char const * file, int line); // constructor used by the macros
+    Logger(LogLevel logLevel_, char const * fileName_, int lineNumber_); // constructor used by the macros
 
     // For printf-style calls
     template <typename... TT> void operator()(const char *fmt_str, TT && ... args);
@@ -155,7 +157,7 @@ namespace {
 
 }
 
-#include <Logger.impl.h>
+#include "implementation/Logger.impl.h"
 
 
 #endif //SIMPLE_CPP_LOGGER_LOGGER_H

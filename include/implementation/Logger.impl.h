@@ -20,6 +20,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <memory>    // For std::unique_ptr
 
 #if defined(_WIN32)
 // Windows
@@ -53,35 +54,34 @@
 #else
 // Unsupported
 #endif
+
+
 namespace LoggerUtils{
 
-  class keepLastCharBuffer : public std::streambuf {
+  class LastCharBuffer : public std::streambuf {
 
   public:
-    keepLastCharBuffer(){
-      _streamBuffer_  = nullptr;
-      _isInitialized_ = false;
-    }
+    LastCharBuffer() = default;
     void setStreamBuffer(std::streambuf* buf_){
-      _streamBuffer_ = buf_;
+      _streamBufferPtr_ = buf_;
       _lastChar_ = traits_type::eof();
       // no buffering, overflow on every char
       setp(nullptr, nullptr);
       _isInitialized_ = true;
     }
-    char getLastChar() const { return _lastChar_; }
+    const char& getLastChar() const { return _lastChar_; }
     bool getIsInitialized() const { return _isInitialized_; }
 
     int_type overflow(int_type c) override {
-      _streamBuffer_->sputc(c);
-      _lastChar_ = c;
+      if( _streamBufferPtr_ != nullptr ) _streamBufferPtr_->sputc(char(c));
+      _lastChar_ = char(c);
       return c;
     }
 
   private:
-    std::streambuf* _streamBuffer_;
-    char _lastChar_{};
-    bool _isInitialized_;
+    std::streambuf* _streamBufferPtr_{nullptr};
+    char _lastChar_{0};
+    bool _isInitialized_{false};
   };
 
 // String Utils
@@ -139,7 +139,7 @@ namespace LoggerUtils{
 
     return outputStr;
   }
-  inline std::string repeatString(const std::string inputStr_, int amount_){
+  inline std::string repeatString(const std::string &inputStr_, int amount_){
     std::string outputStr;
     if(amount_ <= 0) return outputStr;
     for(int i_count = 0 ; i_count < amount_ ; i_count++){
@@ -147,16 +147,17 @@ namespace LoggerUtils{
     }
     return outputStr;
   }
-  inline std::string removeRepeatedCharacters(const std::string &inputStr_, std::string doubledChar_) {
+  inline std::string removeRepeatedCharacters(const std::string &inputStr_, const std::string &doubledChar_) {
+    std::string doubledCharStr = doubledChar_+doubledChar_;
     std::string outStr = inputStr_;
-    std::string oldStr;
-    while(oldStr != outStr){
-      oldStr = outStr;
-      outStr = LoggerUtils::replaceSubstringInString(outStr, doubledChar_+doubledChar_, doubledChar_);
-    }
+    std::string lastStr;
+    do{
+      lastStr = outStr;
+      outStr = LoggerUtils::replaceSubstringInString(outStr, doubledCharStr, doubledChar_);
+    } while( lastStr != outStr );
     return outStr;
   }
-  inline std::string replaceSubstringInString(const std::string &input_str_, std::string substr_to_look_for_, std::string substr_to_replace_) {
+  inline std::string replaceSubstringInString(const std::string &input_str_, const std::string &substr_to_look_for_, const std::string &substr_to_replace_) {
     std::string stripped_str = input_str_;
     size_t index = 0;
     while ((index = stripped_str.find(substr_to_look_for_, index)) != std::string::npos) {
@@ -170,7 +171,7 @@ namespace LoggerUtils{
     std::vector<std::string> output_splited_string;
 
     const char *src = input_string_.c_str();
-    const char *next = src;
+    const char *next;
 
     std::string out_string_piece;
 
@@ -194,17 +195,20 @@ namespace LoggerUtils{
     return output_splited_string;
 
   }
-  template<typename ... Args> inline std::string formatString( const char *fmt_str, Args ... args ) {
-    size_t size = snprintf( nullptr, 0, fmt_str, args ... ) + 1; // Extra space for '\0'
-    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
-    std::unique_ptr<char[]> buf( new char[ size ] );
-    snprintf( buf.get(), size, fmt_str, args ... );
-    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+  inline std::string formatString( const std::string& strToFormat_ ){
+    return strToFormat_;
+  }
+  template<typename ... Args> inline std::string formatString( const std::string& strToFormat_, const Args& ... args ) {
+    size_t size = snprintf(nullptr, 0, strToFormat_.c_str(), args ...) + 1; // Extra space for '\0'
+    if (size <= 0) { throw std::runtime_error("Error during formatting."); }
+    std::unique_ptr<char[]> buf(new char[size]);
+    snprintf(buf.get(), size, strToFormat_.c_str(), args ...);
+    return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
   }
 
   // Hardware related tools
   inline int getTerminalWidth(){
-    int outWith = 0;
+    int outWith;
 #if defined(_WIN32)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
       GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -213,7 +217,7 @@ namespace LoggerUtils{
 #elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__) \
     || (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__))) \
     || (defined(__APPLE__) && defined(__MACH__))
-    struct winsize w;
+    struct winsize w{};
     ioctl(fileno(stdout), TIOCGWINSZ, &w);
     outWith = (int)(w.ws_col);
     //    outWith = (int)(w.ws_row);
@@ -221,7 +225,7 @@ namespace LoggerUtils{
     return outWith;
   }
 
-  static keepLastCharBuffer _lastCharKeeper_;
+  static LastCharBuffer _lastCharKeeper_;
 
 }
 
@@ -229,69 +233,29 @@ namespace {
 
   // Setters
   void Logger::setMaxLogLevel(int maxLogLevel_) {
-    setMaxLogLevel(getLogLevel(maxLogLevel_));
+    Logger::setMaxLogLevel(static_cast<Logger::LogLevel>(maxLogLevel_));
   }
-
   void Logger::setMaxLogLevel(LogLevel maxLogLevel_) {
     _maxLogLevel_ = maxLogLevel_;
   }
-
   void Logger::setEnableColors(bool enableColors_) {
     _enableColors_ = enableColors_;
   }
-
   void Logger::setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_) {
     _propagateColorsOnUserHeader_ = propagateColorsOnUserHeader_;
   }
-
   void Logger::setPrefixLevel(PrefixLevel prefixLevel_) {
     _prefixLevel_ = prefixLevel_;
   }
-
-  void Logger::setUserHeaderStr(std::string userHeaderStr_) {
-    _userHeaderStr_ = std::move(userHeaderStr_);
+  void Logger::setUserHeaderStr(const std::string &userHeaderStr_) {
+    _userHeaderStr_ = userHeaderStr_;
   }
-
-  void Logger::setPrefixFormat(std::string prefixFormat_){
-    _prefixFormat_ = std::move(prefixFormat_);
+  void Logger::setPrefixFormat(const std::string &prefixFormat_) {
+    _prefixFormat_ = prefixFormat_;
   }
 
 
   // Getters
-  Logger::LogLevel Logger::getLogLevel(int logLevelInt_) {
-    switch (logLevelInt_) {
-      case 0:
-        return (LogLevel::FATAL);
-      case 1:
-        return (LogLevel::ERROR);
-      case 2:
-        return (LogLevel::ALERT);
-      case 3:
-        return (LogLevel::WARNING);
-      case 4:
-        return (LogLevel::INFO);
-      case 5:
-        return (LogLevel::DEBUG);
-      default:
-        return (LogLevel::TRACE);
-    }
-  }
-
-  Logger::PrefixLevel Logger::getPrefixLevel(int prefixLevelInt_) {
-    switch (prefixLevelInt_) {
-      case 0:
-        return (PrefixLevel::NONE);
-      case 1:
-        return (PrefixLevel::MINIMAL);
-      case 2:
-        return (PrefixLevel::PRODUCTION);
-      case 3:
-        return (PrefixLevel::DEBUG);
-      default:
-        return (PrefixLevel::FULL);
-    }
-  }
-
   int Logger::getMaxLogLevelInt() {
     switch (_maxLogLevel_) {
       case LogLevel::FATAL:
@@ -311,16 +275,13 @@ namespace {
 
     }
   }
-
   Logger::LogLevel Logger::getMaxLogLevel() {
     return _maxLogLevel_;
   }
-
   std::string Logger::getPrefixString() {
     buildCurrentPrefix();
     return _currentPrefix_;
   }
-
   std::string Logger::getPrefixString(Logger loggerConstructor){
     // Calling the constructor will automatically update the fields
     return Logger::getPrefixString();
@@ -334,43 +295,44 @@ namespace {
 
 
   // Macro-Related Methods
-  Logger::Logger(LogLevel level, char const *file, int line) {
+  Logger::Logger(LogLevel logLevel_, char const *fileName_, int lineNumber_) {
     hookStreamBuffer();
-    if (level != _currentLogLevel_) _isNewLine_ = true; // force reprinting the prefix if the verbosity has changed
+    if (logLevel_ != _currentLogLevel_) _isNewLine_ = true; // force reprinting the prefix if the verbosity has changed
 
-    _currentLogLevel_ = level;
-    _currentFileName_ = LoggerUtils::splitString(file, "/").back();
-    _currentLineNumber_ = line;
+    // static members
+    _currentLogLevel_ = logLevel_;
+//    _currentFileName_ = LoggerUtils::splitString(fileName_, "/").back();
+    _currentFileName_ = fileName_;
+    _currentLineNumber_ = lineNumber_;
   }
-
-  template<typename... TT>
-  void Logger::operator()(const char *fmt_str, TT &&... args) {
+  template<typename... TT> void Logger::operator()(const char *fmt_str, TT &&... args) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return;
-    std::lock_guard<std::mutex> lockGuard(_loggerMutex_);
 
-    printFormat(fmt_str, std::forward<TT>(args)...);
+    { // guard
+      std::lock_guard<std::mutex> guard(_loggerMutex_);
+      printFormat(fmt_str, std::forward<TT>(args)...);
+      if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
+        _outputStream_ << std::endl;
+        _isNewLine_ = true;
+      }
+    } // guard
 
-    if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
-      _outputStream_ << std::endl;
-      _isNewLine_ = true;
-    }
   }
-
-  template<typename T>
-  Logger &Logger::operator<<(const T &data) {
+  template<typename T> Logger &Logger::operator<<(const T &data) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
     std::stringstream dataStream;
     dataStream << data;
-
-    std::lock_guard<std::mutex> lockGuard(_loggerMutex_);
-    printFormat(dataStream.str().c_str());
+    {
+      std::lock_guard<std::mutex> guard(_loggerMutex_);
+      /* do whatever necessary with the shared data */
+      printFormat(dataStream.str().c_str());
+    }
 
     return *this;
   }
-
   Logger &Logger::operator<<(std::ostream &(*f)(std::ostream &)) {
 
     // Handling std::endl
@@ -387,6 +349,7 @@ namespace {
 
     // default:
     // _prefixFormat_ = "{TIME} {USER_HEADER} {SEVERITY} {FILELINE} {THREAD}";
+    if( _prefixFormat_.empty() ) _prefixFormat_ = LOGGER_PREFIX_FORMAT;
 
     // Reset the prefix
     _currentPrefix_ = LoggerUtils::stripStringUnicode(_prefixFormat_); // remove potential colors
@@ -460,7 +423,6 @@ namespace {
       _currentPrefix_ += ": ";
     }
   }
-
   std::string Logger::getTagColorStr(LogLevel selectedLogLevel_) {
 
     switch (selectedLogLevel_) {
@@ -485,7 +447,6 @@ namespace {
     }
 
   }
-
   std::string Logger::getTagStr(LogLevel selectedLogLevel_) {
 
     switch (selectedLogLevel_) {
@@ -509,7 +470,6 @@ namespace {
 
     }
   }
-
   void Logger::hookStreamBuffer(){
     if(LoggerUtils::_lastCharKeeper_.getIsInitialized()) return;
     std::streambuf* cbuf = _outputStream_.rdbuf();   // back up cout's streambuf
@@ -588,10 +548,10 @@ namespace {
   bool Logger::_propagateColorsOnUserHeader_ = LOGGER_ENABLE_COLORS_ON_USER_HEADER;
   bool Logger::_cleanLineBeforePrint_ = LOGGER_CLEAR_LINE_BEFORE_PRINT;
   bool Logger::_disablePrintfLineJump_ = false;
-  Logger::LogLevel Logger::_maxLogLevel_ = Logger::getLogLevel(LOGGER_MAX_LOG_LEVEL_PRINTED);
-  Logger::PrefixLevel Logger::_prefixLevel_ = Logger::getPrefixLevel(LOGGER_PREFIX_LEVEL);
+  Logger::LogLevel Logger::_maxLogLevel_(static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED));
+  Logger::PrefixLevel Logger::_prefixLevel_(static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL));
   std::string Logger::_userHeaderStr_;
-  std::string Logger::_prefixFormat_ = LOGGER_PREFIX_FORMAT;
+  std::string Logger::_prefixFormat_;
 
   std::string Logger::_currentPrefix_;
   Logger::LogLevel Logger::_currentLogLevel_ = Logger::LogLevel::TRACE;
