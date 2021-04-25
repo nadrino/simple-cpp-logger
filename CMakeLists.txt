@@ -32,4 +32,4 @@ if(${CMAKE_BUILD_TYPE} MATCHES Debug)
     add_definitions( -D DEBUG_EXAMPLE )
 endif()
 
-add_executable(LoggerExample example/main.cpp)
+add_executable(LoggerExample example/main.cpp example/ClassExample.cpp)

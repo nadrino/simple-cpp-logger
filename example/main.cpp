@@ -3,7 +3,10 @@
 //
 
 #include <future>
+#include "ClassExample.h"
+
 #include "Logger.h"
+
 
 int main(){
 
@@ -64,7 +67,8 @@ int main(){
   LogInfo << "A header for each calls in this source file can be added:" << std::endl;
   LogInfo << "-----------------------------------------" << std::endl;
   Logger::setUserHeaderStr("[LoggerExample]");
-  LogInfo << "There you go :)." << std::endl;
+  LogWarning << "There you go :)." << std::endl;
+  ClassExample().printMessageFromAnotherSourceFile(); // header is only defined for one source file
 
   LogInfo.quietLineJump();
 
