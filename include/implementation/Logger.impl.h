@@ -35,6 +35,8 @@
 #include <sys/resource.h>
 #include <mach/mach.h>
 #include <sys/ioctl.h>
+#include <Logger.h>
+
 #elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
 // Linux
 #include <unistd.h>
@@ -294,23 +296,29 @@ namespace {
   }
 
 
-  // Macro-Related Methods
+  // C-tor D-tor
   Logger::Logger(LogLevel logLevel_, char const *fileName_, int lineNumber_) {
     hookStreamBuffer();
     if (logLevel_ != _currentLogLevel_) _isNewLine_ = true; // force reprinting the prefix if the verbosity has changed
 
+    // Lock while this object is created
+    _loggerMutex_.lock();
+
     // static members
     _currentLogLevel_ = logLevel_;
-//    _currentFileName_ = LoggerUtils::splitString(fileName_, "/").back();
     _currentFileName_ = fileName_;
     _currentLineNumber_ = lineNumber_;
   }
+  Logger::~Logger() {
+    _loggerMutex_.unlock();
+  }
+
   template<typename... TT> void Logger::operator()(const char *fmt_str, TT &&... args) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return;
 
     { // guard
-      std::lock_guard<std::mutex> guard(_loggerMutex_);
+//      std::lock_guard<std::mutex> guard(_loggerMutex_);
       printFormat(fmt_str, std::forward<TT>(args)...);
       if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
         _outputStream_ << std::endl;
@@ -326,7 +334,7 @@ namespace {
     std::stringstream dataStream;
     dataStream << data;
     {
-      std::lock_guard<std::mutex> guard(_loggerMutex_);
+//      std::lock_guard<std::mutex> guard(_loggerMutex_);
       /* do whatever necessary with the shared data */
       printFormat(dataStream.str().c_str());
     }

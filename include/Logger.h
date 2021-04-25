@@ -112,6 +112,7 @@ namespace {
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
     Logger(LogLevel logLevel_, char const * fileName_, int lineNumber_); // constructor used by the macros
+    ~Logger();
 
     // For printf-style calls
     template <typename... TT> void operator()(const char *fmt_str, TT && ... args);

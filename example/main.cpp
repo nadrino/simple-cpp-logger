@@ -2,6 +2,7 @@
 // Created by Nadrino on 24/08/2020.
 //
 
+#include <future>
 #include "Logger.h"
 
 int main(){
@@ -141,6 +142,24 @@ int main(){
   LogInfo << "test";
   std::cout << std::endl;
   LogInfo << "And now ?" << std::endl;
+
+  int* ptrStopLoop = new int();
+  *ptrStopLoop = 0;
+  std::future<void> threadLoop = std::async( std::launch::async, [ptrStopLoop](){
+
+    while( *ptrStopLoop == 0 ){
+      std::this_thread::sleep_for(std::chrono::microseconds (1));
+      LogInfo << "Message from ANOTHER thread..." << std::endl;
+    }
+
+  } );
+
+  for( int iPrint = 0 ; iPrint < 5 ; iPrint++ ){
+    std::this_thread::sleep_for(std::chrono::microseconds (1));
+    LogWarning << "Message from the MAIN thread" << std::endl;
+  }
+  *ptrStopLoop = 1;
+  threadLoop.get();
 
   Logger::quietLineJump();
 
