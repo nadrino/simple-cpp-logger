@@ -83,10 +83,11 @@ namespace {
   protected:
 
     static void buildCurrentPrefix();
+    static void getFormattedUserHeaderStr(std::string &formattedUserHeaderBuffer_);
 
     static void hookStreamBuffer();
-    static std::string getTagColorStr(LogLevel selectedLogLevel_);
-    static std::string getTagStr(LogLevel selectedLogLevel_);
+    static std::string getLogLevelColorStr(const LogLevel &selectedLogLevel_);
+    static std::string getLogLevelStr(const LogLevel &selectedLogLevel_);
 
     template<typename ... Args> static void printFormat(const char *fmt_str, Args ... args );
 

@@ -71,14 +71,16 @@ namespace LoggerUtils{
 
   //! String Utils
   inline bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
-  inline std::string toLowerCase(std::string& inputStr_);
+  inline std::string padString(const std::string& inputStr_, unsigned int padSize_, const char& padChar = ' ');
+  inline std::string toLowerCase(const std::string &inputStr_);
   inline std::string stripStringUnicode(const std::string &inputStr_);
   inline std::string repeatString(const std::string &inputStr_, int amount_);
-  inline std::string removeRepeatedCharacters(const std::string &inputStr_, const std::string &doubledChar_);
-  inline std::string replaceSubstringInString(const std::string &input_str_, const std::string &substr_to_look_for_, const std::string &substr_to_replace_);
+  inline void replaceSubstringInsideInputString(std::string &input_str_, const std::string &substr_to_look_for_, const std::string &substr_to_replace_);
   inline std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_);
   inline std::string formatString( const std::string& strToFormat_ ); // 0 args overrider
   template<typename ... Args> inline std::string formatString( const std::string& strToFormat_, const Args& ... args );
+
+  inline void removeRepeatedCharInsideInputStr(std::string &inputStr_, const std::string &doubledChar_);
 
   // Hardware Utils
   inline int getTerminalWidth();
@@ -98,7 +100,18 @@ namespace LoggerUtils{
     if(string_.find(substring_) != std::string::npos) return true;
     else return false;
   }
-  inline std::string toLowerCase(std::string& inputStr_){
+  inline std::string padString(const std::string& inputStr_, unsigned int padSize_, const char& padChar){
+    std::string outputString;
+    int padDelta = int(inputStr_.size()) - int(padSize_);
+    while( padDelta < 0 ){
+      // add extra chars if needed
+      outputString += padChar;
+      padDelta++;
+    }
+    outputString += inputStr_;
+    return outputString.substr(0, outputString.size() - padDelta);
+  }
+  inline std::string toLowerCase(const std::string &inputStr_){
     std::string output_str(inputStr_);
     std::transform(output_str.begin(), output_str.end(), output_str.begin(),
                    [](unsigned char c) { return std::tolower(c); });
@@ -151,24 +164,20 @@ namespace LoggerUtils{
     }
     return outputStr;
   }
-  inline std::string removeRepeatedCharacters(const std::string &inputStr_, const std::string &doubledChar_) {
+  inline void removeRepeatedCharInsideInputStr(std::string &inputStr_, const std::string &doubledChar_){
     std::string doubledCharStr = doubledChar_+doubledChar_;
-    std::string outStr = inputStr_;
     std::string lastStr;
     do{
-      lastStr = outStr;
-      outStr = LoggerUtils::replaceSubstringInString(outStr, doubledCharStr, doubledChar_);
-    } while( lastStr != outStr );
-    return outStr;
+      lastStr = inputStr_;
+      LoggerUtils::replaceSubstringInsideInputString(inputStr_, doubledCharStr, doubledChar_);
+    } while( lastStr != inputStr_ );
   }
-  inline std::string replaceSubstringInString(const std::string &input_str_, const std::string &substr_to_look_for_, const std::string &substr_to_replace_) {
-    std::string stripped_str = input_str_;
+  inline void replaceSubstringInsideInputString(std::string &input_str_, const std::string &substr_to_look_for_, const std::string &substr_to_replace_){
     size_t index = 0;
-    while ((index = stripped_str.find(substr_to_look_for_, index)) != std::string::npos) {
-      stripped_str.replace(index, substr_to_look_for_.length(), substr_to_replace_);
+    while ((index = input_str_.find(substr_to_look_for_, index)) != std::string::npos) {
+      input_str_.replace(index, substr_to_look_for_.length(), substr_to_replace_);
       index += substr_to_replace_.length();
     }
-    return stripped_str;
   }
   inline std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_) {
 

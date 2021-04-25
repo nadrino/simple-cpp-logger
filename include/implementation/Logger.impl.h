@@ -130,86 +130,104 @@ namespace {
   // Protected Methods
   void Logger::buildCurrentPrefix() {
 
+    std::string strBuffer;
+
+    // RESET THE PREFIX
+    _currentPrefix_ = "";
+
+    // Nothing else -> NONE level
+    if( Logger::_prefixLevel_ == Logger::PrefixLevel::NONE ){
+      if( not _userHeaderStr_.empty() ){
+        Logger::getFormattedUserHeaderStr(_currentPrefix_);
+        _currentPrefix_ += " "; // extra space
+      }
+      return;
+    }
+
     // default:
     // _prefixFormat_ = "{TIME} {USER_HEADER} {SEVERITY} {FILELINE} {THREAD}";
     if( _prefixFormat_.empty() ) _prefixFormat_ = LOGGER_PREFIX_FORMAT;
 
     // Reset the prefix
     _currentPrefix_ = LoggerUtils::stripStringUnicode(_prefixFormat_); // remove potential colors
-    std::string contentStrBuffer;
 
-    // "{THREAD}"
-    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::FULL){
-      std::stringstream ss;
-      ss << "\x1b[90m(thread: " << std::this_thread::get_id() << ")\033[0m";
-      contentStrBuffer = ss.str();
-    }
-    _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{THREAD}", contentStrBuffer);
-    contentStrBuffer = "";
+    // {SEVERITY} -> at least MINIMAL level -> LATER, can introduce repeated space in the prefix!
 
-    // {FILE} and {LINE}
-    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::DEBUG){
-      contentStrBuffer = "\x1b[90m";
-      contentStrBuffer += _currentFileName_;
-      contentStrBuffer += ":";
-      contentStrBuffer += std::to_string(_currentLineNumber_);
-      contentStrBuffer += "\033[0m";
-    }
-    _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{FILELINE}", contentStrBuffer);
-    contentStrBuffer = "";
-
-    // {TIME}
+    // {TIME} -> at least PRODUCTION level
+    strBuffer = "";
     if (Logger::_prefixLevel_ >= Logger::PrefixLevel::PRODUCTION) {
       time_t rawTime = std::time(nullptr);
       struct tm timeInfo = *localtime(&rawTime);
       std::stringstream ss;
       ss << std::put_time(&timeInfo, "%H:%M:%S");
-      contentStrBuffer = ss.str();
+      strBuffer += ss.str();
     }
-    _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{TIME}", contentStrBuffer);
-    contentStrBuffer = "";
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{TIME}", strBuffer);
 
-    // {SEVERITY}
-    if (Logger::_prefixLevel_ >= Logger::PrefixLevel::MINIMAL) {
-      if (_enableColors_) contentStrBuffer += getTagColorStr(_currentLogLevel_);
-      char buffer[6];
-      snprintf(buffer, 6, "%5.5s", getTagStr(_currentLogLevel_).c_str());
-      contentStrBuffer += buffer;
-      if (_enableColors_) contentStrBuffer += "\033[0m";
+    // {FILE} and {LINE} -> at least DEBUG level
+    strBuffer = "";
+    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::DEBUG){
+      strBuffer += "\x1b[90m"; // grey
+      strBuffer += _currentFileName_;
+      strBuffer += ":";
+      strBuffer += std::to_string(_currentLineNumber_);
+      strBuffer += "\033[0m";
     }
-    _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{SEVERITY}", contentStrBuffer);
-    contentStrBuffer = "";
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{FILELINE}", strBuffer);
+
+    // "{THREAD}" -> at least FULL level
+    strBuffer = "";
+    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::FULL){
+      std::stringstream ss;
+      ss << "\x1b[90m(thread: " << std::this_thread::get_id() << ")\033[0m";
+      strBuffer = ss.str();
+    }
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{THREAD}", strBuffer);
+
+
+    if( _userHeaderStr_.empty() ){
+      LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", "");
+    }
 
     // Remove extra spaces left by non-applied tags
-    _currentPrefix_ = LoggerUtils::removeRepeatedCharacters(_currentPrefix_, " ");
-
-    // cleanup
-    while(_currentPrefix_[_currentPrefix_.size()-1] == ' ') _currentPrefix_ = _currentPrefix_.substr(0, _currentPrefix_.size()-1);
+    LoggerUtils::removeRepeatedCharInsideInputStr(_currentPrefix_, " ");
     while(_currentPrefix_[0] == ' ') _currentPrefix_ = _currentPrefix_.substr(1, _currentPrefix_.size());
 
-    // {USER_HEADER} -> can contain multiple spaces
-    if(not _userHeaderStr_.empty()){
-      if(_enableColors_ and _propagateColorsOnUserHeader_) contentStrBuffer += getTagColorStr(_currentLogLevel_);
-      contentStrBuffer += _userHeaderStr_;
-      if(_enableColors_ and _propagateColorsOnUserHeader_) contentStrBuffer += "\033[0m";
-      _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{USER_HEADER}", contentStrBuffer);
+    // User prefix can have doubled spaces
+    // "{USER_HEADER}" ->
+    if( not _userHeaderStr_.empty() ){
+      strBuffer = "";
+      Logger::getFormattedUserHeaderStr(strBuffer);
+      LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", strBuffer);
     }
-    else{
-      _currentPrefix_ = LoggerUtils::replaceSubstringInString(_currentPrefix_, "{USER_HEADER}", contentStrBuffer);
-      _currentPrefix_ = LoggerUtils::removeRepeatedCharacters(_currentPrefix_, " ");
-      while(_currentPrefix_[0] == ' ') _currentPrefix_ = _currentPrefix_.substr(1, _currentPrefix_.size());
+
+    // {SEVERITY} -> at least MINIMAL level
+    strBuffer = "";
+    if( Logger::_prefixLevel_ >= Logger::PrefixLevel::MINIMAL ) {
+      if (_enableColors_){ strBuffer += getLogLevelColorStr(_currentLogLevel_); }
+      strBuffer += LoggerUtils::padString(getLogLevelStr(_currentLogLevel_), 5);
+      if (_enableColors_){ strBuffer += "\033[0m"; }
     }
-    contentStrBuffer = "";
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{SEVERITY}", strBuffer);
+
+    // cleanup (make sure there's no trailing spaces)
+    while(_currentPrefix_[_currentPrefix_.size()-1] == ' ') _currentPrefix_ = _currentPrefix_.substr(0, _currentPrefix_.size()-1);
 
     // Add ": " to separate the header from the message
     if (not _currentPrefix_.empty()){
       _currentPrefix_ += ": ";
     }
   }
-  std::string Logger::getTagColorStr(LogLevel selectedLogLevel_) {
+  void Logger::getFormattedUserHeaderStr(std::string &formattedUserHeaderBuffer_) {
+    if( not _userHeaderStr_.empty() ){
+      if(_enableColors_ and _propagateColorsOnUserHeader_) formattedUserHeaderBuffer_ += getLogLevelColorStr(_currentLogLevel_);
+      formattedUserHeaderBuffer_ += _userHeaderStr_;
+      if(_enableColors_ and _propagateColorsOnUserHeader_) formattedUserHeaderBuffer_ += "\033[0m";
+    }
+  }
+  std::string Logger::getLogLevelColorStr(const LogLevel &selectedLogLevel_) {
 
     switch (selectedLogLevel_) {
-
       case Logger::LogLevel::FATAL:
         return "\033[41m";
       case Logger::LogLevel::ERROR:
@@ -226,11 +244,10 @@ namespace {
         return "\x1b[36m";
       default:
         return "";
-
     }
 
   }
-  std::string Logger::getTagStr(LogLevel selectedLogLevel_) {
+  std::string Logger::getLogLevelStr(const LogLevel &selectedLogLevel_) {
 
     switch (selectedLogLevel_) {
 
@@ -318,7 +335,7 @@ namespace {
       }
 
       if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
-        _outputStream_ << LoggerUtils::formatString("%s", getTagColorStr(LogLevel::FATAL).c_str());
+        _outputStream_ << LoggerUtils::formatString("%s", getLogLevelColorStr(LogLevel::FATAL).c_str());
 
       _outputStream_ << formattedString;
 
