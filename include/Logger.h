@@ -51,10 +51,10 @@ namespace {
     // Keep in mind that every parameter you set will be applied only in the context of the source file you're in
     // It is an inherent feature as a **header-only** library
     static void setMaxLogLevel(int maxLogLevel_);
-    static void setMaxLogLevel(LogLevel maxLogLevel_);
+    static void setMaxLogLevel(const LogLevel &maxLogLevel_);
     static void setEnableColors(bool enableColors_);
     static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
-    static void setPrefixLevel(PrefixLevel prefixLevel_);
+    static void setPrefixLevel(const PrefixLevel &prefixLevel_);
     static void setUserHeaderStr(const std::string &userHeaderStr_);
     static void setPrefixFormat(const std::string &prefixFormat_);
 
@@ -77,13 +77,13 @@ namespace {
 
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
-    Logger(LogLevel logLevel_, char const * fileName_, int lineNumber_);
+    Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_);
     virtual ~Logger();
 
   protected:
 
     static void buildCurrentPrefix();
-    static void getFormattedUserHeaderStr(std::string &formattedUserHeaderBuffer_);
+    static void formatUserHeaderStr(std::string &strBuffer_);
 
     static void hookStreamBuffer();
     static std::string getLogLevelColorStr(const LogLevel &selectedLogLevel_);

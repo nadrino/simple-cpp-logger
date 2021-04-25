@@ -70,17 +70,17 @@ namespace LoggerUtils{
   };
 
   //! String Utils
-  inline bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_ = false);
-  inline std::string padString(const std::string& inputStr_, unsigned int padSize_, const char& padChar = ' ');
+  inline bool doesStringContainsSubstring(const std::string &string_, const std::string &substring_, bool ignoreCase_ = false);
+  inline std::string padString(const std::string& inputStr_, const unsigned int &padSize_, const char& padChar = ' ');
   inline std::string toLowerCase(const std::string &inputStr_);
   inline std::string stripStringUnicode(const std::string &inputStr_);
   inline std::string repeatString(const std::string &inputStr_, int amount_);
-  inline void replaceSubstringInsideInputString(std::string &input_str_, const std::string &substr_to_look_for_, const std::string &substr_to_replace_);
   inline std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_);
   inline std::string formatString( const std::string& strToFormat_ ); // 0 args overrider
   template<typename ... Args> inline std::string formatString( const std::string& strToFormat_, const Args& ... args );
 
   inline void removeRepeatedCharInsideInputStr(std::string &inputStr_, const std::string &doubledChar_);
+  inline void replaceSubstringInsideInputString(std::string &input_str_, const std::string &substr_to_look_for_, const std::string &substr_to_replace_);
 
   // Hardware Utils
   inline int getTerminalWidth();
@@ -91,16 +91,19 @@ namespace LoggerUtils{
 namespace LoggerUtils{
 
 // String Utils
-  inline bool doesStringContainsSubstring(std::string string_, std::string substring_, bool ignoreCase_){
+  inline bool doesStringContainsSubstring(const std::string &string_, const std::string &substring_, bool ignoreCase_){
     if(substring_.size() > string_.size()) return false;
     if(ignoreCase_){
-      string_ = toLowerCase(string_);
-      substring_ = toLowerCase(substring_);
+      if(toLowerCase(string_).find(toLowerCase(substring_)) != std::string::npos){
+        return true;
+      }
     }
-    if(string_.find(substring_) != std::string::npos) return true;
-    else return false;
+    else if(string_.find(substring_) != std::string::npos){
+      return true;
+    }
+    return false;
   }
-  inline std::string padString(const std::string& inputStr_, unsigned int padSize_, const char& padChar){
+  inline std::string padString(const std::string& inputStr_, const unsigned int &padSize_, const char& padChar){
     std::string outputString;
     int padDelta = int(inputStr_.size()) - int(padSize_);
     while( padDelta < 0 ){

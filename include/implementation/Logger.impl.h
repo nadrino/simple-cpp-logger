@@ -28,7 +28,7 @@ namespace {
   void Logger::setMaxLogLevel(int maxLogLevel_) {
     Logger::setMaxLogLevel(static_cast<Logger::LogLevel>(maxLogLevel_));
   }
-  void Logger::setMaxLogLevel(LogLevel maxLogLevel_) {
+  void Logger::setMaxLogLevel(const LogLevel &maxLogLevel_) {
     _maxLogLevel_ = maxLogLevel_;
   }
   void Logger::setEnableColors(bool enableColors_) {
@@ -37,7 +37,7 @@ namespace {
   void Logger::setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_) {
     _propagateColorsOnUserHeader_ = propagateColorsOnUserHeader_;
   }
-  void Logger::setPrefixLevel(PrefixLevel prefixLevel_) {
+  void Logger::setPrefixLevel(const PrefixLevel &prefixLevel_) {
     _prefixLevel_ = prefixLevel_;
   }
   void Logger::setUserHeaderStr(const std::string &userHeaderStr_) {
@@ -70,7 +70,7 @@ namespace {
   }
 
   // C-tor D-tor
-  Logger::Logger(LogLevel logLevel_, char const *fileName_, int lineNumber_) {
+  Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_) {
 
     hookStreamBuffer(); // hook the stream buffer to an object we can handle
     if (logLevel_ != _currentLogLevel_) _isNewLine_ = true; // force reprinting the prefix if the verbosity has changed
@@ -92,14 +92,11 @@ namespace {
 
     if (_currentLogLevel_ > _maxLogLevel_) return;
 
-    { // guard
-//      std::lock_guard<std::mutex> guard(_loggerMutex_);
-      printFormat(fmt_str, std::forward<TT>(args)...);
-      if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
+    Logger::printFormat(fmt_str, std::forward<TT>(args)...);
+    if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
         _outputStream_ << std::endl;
         _isNewLine_ = true;
       }
-    } // guard
 
   }
   template<typename T> Logger &Logger::operator<<(const T &data) {
@@ -138,7 +135,7 @@ namespace {
     // Nothing else -> NONE level
     if( Logger::_prefixLevel_ == Logger::PrefixLevel::NONE ){
       if( not _userHeaderStr_.empty() ){
-        Logger::getFormattedUserHeaderStr(_currentPrefix_);
+        Logger::formatUserHeaderStr(_currentPrefix_);
         _currentPrefix_ += " "; // extra space
       }
       return;
@@ -197,7 +194,7 @@ namespace {
     // "{USER_HEADER}" -> User prefix can have doubled spaces and spaces on the left
     if( not _userHeaderStr_.empty() ){
       strBuffer = "";
-      Logger::getFormattedUserHeaderStr(strBuffer);
+      Logger::formatUserHeaderStr(strBuffer);
       LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", strBuffer);
     }
 
@@ -218,11 +215,11 @@ namespace {
       _currentPrefix_ += ": ";
     }
   }
-  void Logger::getFormattedUserHeaderStr(std::string &formattedUserHeaderBuffer_) {
+  void Logger::formatUserHeaderStr(std::string &strBuffer_) {
     if( not _userHeaderStr_.empty() ){
-      if(_enableColors_ and _propagateColorsOnUserHeader_) formattedUserHeaderBuffer_ += getLogLevelColorStr(_currentLogLevel_);
-      formattedUserHeaderBuffer_ += _userHeaderStr_;
-      if(_enableColors_ and _propagateColorsOnUserHeader_) formattedUserHeaderBuffer_ += "\033[0m";
+      if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += getLogLevelColorStr(_currentLogLevel_);
+      strBuffer_ += _userHeaderStr_;
+      if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += "\033[0m";
     }
   }
   std::string Logger::getLogLevelColorStr(const LogLevel &selectedLogLevel_) {
