@@ -191,10 +191,10 @@ namespace {
 
     // Remove extra spaces left by non-applied tags
     LoggerUtils::removeRepeatedCharInsideInputStr(_currentPrefix_, " ");
+    // Remove extra spaces on the left
     while(_currentPrefix_[0] == ' ') _currentPrefix_ = _currentPrefix_.substr(1, _currentPrefix_.size());
 
-    // User prefix can have doubled spaces
-    // "{USER_HEADER}" ->
+    // "{USER_HEADER}" -> User prefix can have doubled spaces and spaces on the left
     if( not _userHeaderStr_.empty() ){
       strBuffer = "";
       Logger::getFormattedUserHeaderStr(strBuffer);
@@ -226,7 +226,6 @@ namespace {
     }
   }
   std::string Logger::getLogLevelColorStr(const LogLevel &selectedLogLevel_) {
-
     switch (selectedLogLevel_) {
       case Logger::LogLevel::FATAL:
         return "\033[41m";
@@ -245,7 +244,6 @@ namespace {
       default:
         return "";
     }
-
   }
   std::string Logger::getLogLevelStr(const LogLevel &selectedLogLevel_) {
 
