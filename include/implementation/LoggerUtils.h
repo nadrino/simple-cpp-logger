@@ -126,8 +126,8 @@ namespace LoggerUtils{
     if(LoggerUtils::doesStringContainsSubstring(outputStr, "\033")){
       // remove color
       std::string tempStr;
-      auto splitOuputStr = LoggerUtils::splitString(outputStr, "\033");
-      for(const auto& sliceStr : splitOuputStr){
+      auto splitOutputStr = LoggerUtils::splitString(outputStr, "\033");
+      for(const auto& sliceStr : splitOutputStr){
         if(sliceStr.empty()) continue;
         if(tempStr.empty()){
           tempStr = sliceStr;
@@ -184,7 +184,7 @@ namespace LoggerUtils{
   }
   inline std::vector<std::string> splitString(const std::string& input_string_, const std::string& delimiter_) {
 
-    std::vector<std::string> output_splited_string;
+    std::vector<std::string> output_split_string;
 
     const char *src = input_string_.c_str();
     const char *next;
@@ -196,7 +196,7 @@ namespace LoggerUtils{
       while (src != next) {
         out_string_piece += *src++;
       }
-      output_splited_string.emplace_back(out_string_piece);
+      output_split_string.emplace_back(out_string_piece);
       /* Skip the delimiter_ */
       src += delimiter_.size();
     }
@@ -206,9 +206,9 @@ namespace LoggerUtils{
     while (*src != '\0')
       out_string_piece += *src++;
 
-    output_splited_string.emplace_back(out_string_piece);
+    output_split_string.emplace_back(out_string_piece);
 
-    return output_splited_string;
+    return output_split_string;
 
   }
   inline std::string formatString( const std::string& strToFormat_ ){
