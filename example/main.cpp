@@ -7,7 +7,6 @@
 
 #include "Logger.h"
 
-
 int main(){
 
   LogInfo << "-----------------------------------------" << std::endl;
@@ -87,8 +86,8 @@ int main(){
   LogInfo << "-----------------------------------------" << std::endl;
   LogInfo << "You can set the maximum log level of a given source file." << std::endl;
   LogInfo << "-----------------------------------------" << std::endl;
-  Logger::setMaxLogLevel(Logger::LogLevel::INFO);
-  LogInfo << "Here for example, we have set the max log level to INFO (4):" << std::endl;
+  Logger::setMaxLogLevel(LogInfo);
+  LogInfo << "Here for example, we have set the max log level to INFO:" << std::endl;
   LogInfo << "It means than all printouts from FATAL (0) to INFO (4) will be printed," << std::endl;
   LogInfo << "but not the DEBUG (5) and TRACE (6)." << std::endl;
   LogWarning << "-> You can see me :) (but not the next message which is a DEBUG)" << std::endl;
@@ -97,7 +96,7 @@ int main(){
   LogAlert << "* This is because simple-cpp-logger is a header-only library." << std::endl;
   LogAlert << "* In fact, all (static) members of the Logger are defined within a given source file." << std::endl;
   LogAlert << "* To apply this parameter globally, set the variable in your cmake file." << std::endl;
-  Logger::setMaxLogLevel(Logger::LogLevel::TRACE);
+  LogTrace.setMaxLogLevel();
   LogInfo << "For a global application, set it with cmake:" << std::endl;
   LogInfo << "\"-D LOGGER_MAX_LOG_LEVEL_PRINTED=6\" -> TRACE by default" << std::endl;
 

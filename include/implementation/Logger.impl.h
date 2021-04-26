@@ -20,16 +20,22 @@
 #include <iomanip>
 #include <algorithm>
 #include <memory>    // For std::unique_ptr
+#include <Logger.h>
 
-
+#include <cstdio>
+#include <iostream>
 namespace {
 
   // Setters
-  void Logger::setMaxLogLevel(int maxLogLevel_) {
-    Logger::setMaxLogLevel(static_cast<Logger::LogLevel>(maxLogLevel_));
+  void Logger::setMaxLogLevel(const Logger& logger_){
+    // _currentLogLevel_ is set by the constructor,
+    // so when you provide "LogDebug" as an argument the _currentLogLevel_ is automatically updated
+    // Stricto sensu: the argument is just a placeholder for silently updating _currentLogLevel_
+    _maxLogLevel_ = _currentLogLevel_;
   }
-  void Logger::setMaxLogLevel(const LogLevel &maxLogLevel_) {
-    _maxLogLevel_ = maxLogLevel_;
+  void Logger::setMaxLogLevel(){
+    // same technique as other, but this time with no arguments
+    _maxLogLevel_ = _currentLogLevel_;
   }
   void Logger::setEnableColors(bool enableColors_) {
     _enableColors_ = enableColors_;
@@ -66,37 +72,20 @@ namespace {
 
   // User Methods
   void Logger::quietLineJump() {
-    _outputStream_ << std::endl;
+    *_streamBufferSupervisorPtr_ << std::endl;
   }
 
-  // C-tor D-tor
-  Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_) {
-
-    hookStreamBuffer(); // hook the stream buffer to an object we can handle
-    if (logLevel_ != _currentLogLevel_) _isNewLine_ = true; // force reprinting the prefix if the verbosity has changed
-
-    // Lock while this object is created
-    _loggerMutex_.lock();
-
-    // static members
-    _currentLogLevel_ = logLevel_;
-    _currentFileName_ = fileName_;
-    _currentLineNumber_ = lineNumber_;
-  }
-  Logger::~Logger() {
-    _loggerMutex_.unlock();
-  }
-
-
+  //! Non-static Methods
+  // For printf-style calls
   template<typename... TT> void Logger::operator()(const char *fmt_str, TT &&... args) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return;
 
     Logger::printFormat(fmt_str, std::forward<TT>(args)...);
     if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
-        _outputStream_ << std::endl;
-        _isNewLine_ = true;
-      }
+      *_streamBufferSupervisorPtr_ << std::endl;
+      _isNewLine_ = true;
+    }
 
   }
   template<typename T> Logger &Logger::operator<<(const T &data) {
@@ -118,11 +107,38 @@ namespace {
     // Handling std::endl
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
-    _outputStream_ << f;
+    *_streamBufferSupervisorPtr_ << f;
     _isNewLine_ = true;
 
     return *this;
   }
+
+  // C-tor D-tor
+  Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_) {
+
+    setupStreamBufferSupervisor(); // hook the stream buffer to an object we can handle
+    if (logLevel_ != _currentLogLevel_) _isNewLine_ = true; // force reprinting the prefix if the verbosity has changed
+
+    // Lock while this object is created
+    _loggerMutex_.lock();
+
+    // static members
+    _currentLogLevel_ = logLevel_;
+    _currentFileName_ = fileName_;
+    _currentLineNumber_ = lineNumber_;
+  }
+  Logger::~Logger() {
+    _loggerMutex_.unlock();
+  }
+
+  // Deprecated (left here for compatibility)
+  void Logger::setMaxLogLevel(int maxLogLevel_) {
+    Logger::setMaxLogLevel(static_cast<Logger::LogLevel>(maxLogLevel_));
+  }
+  void Logger::setMaxLogLevel(const LogLevel &maxLogLevel_) {
+    _maxLogLevel_ = maxLogLevel_;
+  }
+
 
   // Protected Methods
   void Logger::buildCurrentPrefix() {
@@ -265,17 +281,6 @@ namespace {
 
     }
   }
-  void Logger::hookStreamBuffer(){
-
-    if(_lastCharKeeper_ != nullptr) return;
-    _lastCharKeeper_ = new LoggerUtils::LastCharBuffer(); // this object can't be deleted -> that's why we can't directly override with the logger class
-    std::streambuf* cbuf = _outputStream_.rdbuf();   // back up cout's streambuf
-    _outputStream_.flush();
-    _lastCharKeeper_->setStreamBuffer(cbuf);
-    _outputStream_.rdbuf(_lastCharKeeper_);          // reassign your streambuf to cout
-
-  }
-
   template<typename ... Args> void Logger::printFormat(const char *fmt_str, Args ... args ){
 
     std::string formattedString;
@@ -306,7 +311,7 @@ namespace {
 
         // let the last line jump be handle by the user (or the parent function)
         if (i_line != (slicedString.size() - 1)) {
-          _outputStream_ << std::endl;
+          *_streamBufferSupervisorPtr_ << std::endl;
         }
 
       } // for each line
@@ -314,37 +319,64 @@ namespace {
     else{
 
       // If '\r' is detected, trigger Newline to reprint the header
-      if( _lastCharKeeper_->getLastChar() == '\r' ){
+      if(_streamBufferSupervisorPtr_->getLastChar() == '\r' ){
         // Clean the line if the option is enabled and the terminal width is measurable
         if( _cleanLineBeforePrint_ and LoggerUtils::getTerminalWidth() != 0){
-          _outputStream_ << LoggerUtils::repeatString(" ", LoggerUtils::getTerminalWidth()-1) << "\r";
+          *_streamBufferSupervisorPtr_ << LoggerUtils::repeatString(" ", LoggerUtils::getTerminalWidth()-1) << "\r";
         }
         _isNewLine_ = true;
       }
 
       // Start printing
-      if(_isNewLine_ or _lastCharKeeper_->getLastChar() == '\n'){
+      if(_isNewLine_ or _streamBufferSupervisorPtr_->getLastChar() == '\n'){
         Logger::buildCurrentPrefix();
-        _outputStream_ << _currentPrefix_;
+        *_streamBufferSupervisorPtr_ << _currentPrefix_;
         _isNewLine_ = false;
       }
 
-      if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
-        _outputStream_ << LoggerUtils::formatString("%s", getLogLevelColorStr(LogLevel::FATAL).c_str());
+      if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL){
+        *_streamBufferSupervisorPtr_ << LoggerUtils::formatString("%s", getLogLevelColorStr(LogLevel::FATAL).c_str());
+      }
 
-      _outputStream_ << formattedString;
+      *_streamBufferSupervisorPtr_ << formattedString;
 
       if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
-        _outputStream_ << LoggerUtils::formatString("\033[0m");
+        *_streamBufferSupervisorPtr_ << LoggerUtils::formatString("\033[0m");
     } // else multiline
 
   }
+
+  // Setup Methods
+  void Logger::setupStreamBufferSupervisor(){
+
+    if(_streamBufferSupervisorPtr_ != nullptr) return;
+    _streamBufferSupervisorPtr_ = new LoggerUtils::StreamBufferSupervisor(); // this object can't be deleted -> that's why we can't directly override with the logger class
+    Logger::setupOutputFile();
+
+  }
+  void Logger::setupOutputFile(){
+    if( not _writeInOutputFile_ or not _outputFileName_.empty() ){
+      return;
+    }
+    _outputFileName_ = LOGGER_OUTFILE_FOLDER;
+    _outputFileName_ += "/";
+    _outputFileName_ += LOGGER_OUTFILE_NAME_FORMAT;
+    LoggerUtils::replaceSubstringInsideInputString(_outputFileName_, "{EXE}", LoggerUtils::getExecutableName());
+    time_t rawTime = std::time(nullptr);
+    struct tm timeInfo = *localtime(&rawTime);
+    std::stringstream ss;
+    ss << std::put_time(&timeInfo, "%Y%m%d_%H%M%S");
+    LoggerUtils::replaceSubstringInsideInputString(_outputFileName_, "{TIME}", ss.str());
+    _streamBufferSupervisorPtr_->openOutFileStream(_outputFileName_);
+  }
+
 
 
   // Private Members
   bool Logger::_enableColors_ = LOGGER_ENABLE_COLORS;
   bool Logger::_propagateColorsOnUserHeader_ = LOGGER_ENABLE_COLORS_ON_USER_HEADER;
   bool Logger::_cleanLineBeforePrint_ = LOGGER_CLEAR_LINE_BEFORE_PRINT;
+  bool Logger::_writeInOutputFile_ = LOGGER_WRITE_OUTFILE;
   bool Logger::_disablePrintfLineJump_ = false;
   Logger::LogLevel Logger::_maxLogLevel_(static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED));
   Logger::PrefixLevel Logger::_prefixLevel_(static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL));
@@ -356,9 +388,9 @@ namespace {
   std::string Logger::_currentFileName_;
   int Logger::_currentLineNumber_{-1};
   bool Logger::_isNewLine_{true};
-  std::ostream& Logger::_outputStream_ = std::cout;
   std::mutex Logger::_loggerMutex_;
-  LoggerUtils::LastCharBuffer* Logger::_lastCharKeeper_{nullptr};
+  LoggerUtils::StreamBufferSupervisor* Logger::_streamBufferSupervisorPtr_{nullptr};
+  std::string Logger::_outputFileName_;
 
 }
 

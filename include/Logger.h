@@ -50,8 +50,8 @@ namespace {
     //! Setters
     // Keep in mind that every parameter you set will be applied only in the context of the source file you're in
     // It is an inherent feature as a **header-only** library
-    static void setMaxLogLevel(int maxLogLevel_);
-    static void setMaxLogLevel(const LogLevel &maxLogLevel_);
+    static void setMaxLogLevel(const Logger& logger_);  // Example: Logger::setMaxLogLevel(LogDebug);
+    static void setMaxLogLevel();                       // Example: LogDebug.setMaxLogLevel();
     static void setEnableColors(bool enableColors_);
     static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
     static void setPrefixLevel(const PrefixLevel &prefixLevel_);
@@ -74,23 +74,26 @@ namespace {
     template<typename T> Logger &operator<<(const T &data);
     Logger &operator<<(std::ostream &(*f)(std::ostream &));
 
-
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
     Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_);
     virtual ~Logger();
 
+    // Deprecated (left here for compatibility)
+    static void setMaxLogLevel(int maxLogLevel_);
+    static void setMaxLogLevel(const LogLevel &maxLogLevel_);
+
   protected:
 
     static void buildCurrentPrefix();
     static void formatUserHeaderStr(std::string &strBuffer_);
-
-    static void hookStreamBuffer();
     static std::string getLogLevelColorStr(const LogLevel &selectedLogLevel_);
     static std::string getLogLevelStr(const LogLevel &selectedLogLevel_);
-
     template<typename ... Args> static void printFormat(const char *fmt_str, Args ... args );
 
+    // Setup Methods
+    static void setupStreamBufferSupervisor();
+    static void setupOutputFile();
 
   private:
 
@@ -99,6 +102,7 @@ namespace {
     static bool _disablePrintfLineJump_;
     static bool _propagateColorsOnUserHeader_;
     static bool _cleanLineBeforePrint_;
+    static bool _writeInOutputFile_;
     static LogLevel _maxLogLevel_;
     static PrefixLevel _prefixLevel_;
     static std::string _userHeaderStr_;
@@ -110,9 +114,10 @@ namespace {
     static int _currentLineNumber_;
     static std::string _currentPrefix_;
     static bool _isNewLine_;
-    static std::ostream& _outputStream_;
     static std::mutex _loggerMutex_;
-    static LoggerUtils::LastCharBuffer* _lastCharKeeper_;
+    static LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_;
+    static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
+    static std::string _outputFileName_;
 
   };
 
