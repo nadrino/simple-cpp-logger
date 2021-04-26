@@ -8,9 +8,6 @@
 #include <iostream>
 #include <fstream>
 
-// stripping the full path
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-
 // Header
 namespace LoggerUtils{
 

@@ -10,6 +10,7 @@
 #include <string>
 #include <algorithm>
 #include <memory>
+#include <cstring> // strrchr
 
 #if defined(_WIN32)
 // Windows
