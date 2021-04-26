@@ -6,7 +6,10 @@
 #define SIMPLE_CPP_LOGGER_LOGGERUTILS_IMPL_H
 
 #include <iostream>
-#include "fstream"
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <memory>
 
 #if defined(_WIN32)
 // Windows
