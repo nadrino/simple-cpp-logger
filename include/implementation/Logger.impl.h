@@ -24,6 +24,7 @@
 
 #include <cstdio>
 #include <iostream>
+
 namespace {
 
   // Setters
@@ -72,6 +73,7 @@ namespace {
 
   // User Methods
   void Logger::quietLineJump() {
+    Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << std::endl;
   }
 
@@ -348,7 +350,6 @@ namespace {
 
   // Setup Methods
   void Logger::setupStreamBufferSupervisor(){
-
     if(_streamBufferSupervisorPtr_ != nullptr) return;
     _streamBufferSupervisorPtr_ = new LoggerUtils::StreamBufferSupervisor(); // this object can't be deleted -> that's why we can't directly override with the logger class
     Logger::setupOutputFile();
