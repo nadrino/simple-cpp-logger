@@ -163,7 +163,7 @@ namespace {
     // _prefixFormat_ = "{TIME} {USER_HEADER} {SEVERITY} {FILELINE} {THREAD}";
     if( _prefixFormat_.empty() ) _prefixFormat_ = LOGGER_PREFIX_FORMAT;
 
-    // Reset the prefix
+    // reset the prefix
     _currentPrefix_ = LoggerUtils::stripStringUnicode(_prefixFormat_); // remove potential colors
 
     // {SEVERITY} -> at least MINIMAL level -> LATER, can introduce repeated space in the prefix!
