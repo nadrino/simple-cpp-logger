@@ -20,10 +20,12 @@
 #include <iomanip>
 #include <algorithm>
 #include <memory>    // For std::unique_ptr
-#include <Logger.h>
 
 #include <cstdio>
 #include <iostream>
+
+#include <Logger.h>
+
 namespace {
 
   // Setters
