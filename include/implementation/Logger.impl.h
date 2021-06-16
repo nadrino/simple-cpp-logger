@@ -101,6 +101,9 @@ namespace {
 
     std::stringstream dataStream;
     dataStream << data;
+
+    if( dataStream.str().empty() ) return *this; // Don't even print the header
+
     {
 //      std::lock_guard<std::mutex> guard(_loggerMutex_);
       /* do whatever necessary with the shared data */
