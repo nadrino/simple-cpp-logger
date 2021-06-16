@@ -326,16 +326,20 @@ namespace {
     else{
 
       // If '\r' is detected, trigger Newline to reprint the header
-      if(_streamBufferSupervisorPtr_->getLastChar() == '\r' ){
+      if( _streamBufferSupervisorPtr_->getLastChar() == '\r' ){
         // Clean the line if the option is enabled and the terminal width is measurable
-        if( _cleanLineBeforePrint_ and LoggerUtils::getTerminalWidth() != 0){
-          *_streamBufferSupervisorPtr_ << LoggerUtils::repeatString(" ", LoggerUtils::getTerminalWidth()-1) << "\r";
+        if( _cleanLineBeforePrint_ ){
+          *_streamBufferSupervisorPtr_ << "\033[1K";
         }
         _isNewLine_ = true;
       }
 
+      if( _streamBufferSupervisorPtr_->getLastChar() == '\n' ){
+        _isNewLine_ = true;
+      }
+
       // Start printing
-      if(_isNewLine_ or _streamBufferSupervisorPtr_->getLastChar() == '\n'){
+      if(_isNewLine_){
         Logger::buildCurrentPrefix();
         *_streamBufferSupervisorPtr_ << _currentPrefix_;
         _isNewLine_ = false;
