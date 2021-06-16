@@ -69,6 +69,9 @@ namespace {
     // Calling the constructor will automatically update the fields
     return Logger::getPrefixString();
   }
+  LoggerUtils::StreamBufferSupervisor *Logger::getStreamBufferSupervisorPtr() {
+    return _streamBufferSupervisorPtr_;
+  }
 
 
   // User Methods
@@ -391,6 +394,7 @@ namespace {
   bool Logger::_isNewLine_{true};
   std::mutex Logger::_loggerMutex_;
   LoggerUtils::StreamBufferSupervisor* Logger::_streamBufferSupervisorPtr_{nullptr};
+
   std::string Logger::_outputFileName_;
 
 }

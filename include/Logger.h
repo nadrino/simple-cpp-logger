@@ -65,6 +65,7 @@ namespace {
     static const LogLevel & getMaxLogLevel();
     static std::string getPrefixString();                                // LogWarning.getPrefixString()
     static std::string getPrefixString(const Logger& loggerConstructor); // Logger::getPrefixString(LogWarning)
+    static LoggerUtils::StreamBufferSupervisor *getStreamBufferSupervisorPtr();
 
     //! Misc
     static void quietLineJump();
