@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <memory>    // For std::unique_ptr
+#include <Logger.h>
 
 #include <cstdio>
 #include <iostream>
@@ -70,10 +71,14 @@ namespace {
     // Calling the constructor will automatically update the fields
     return Logger::getPrefixString();
   }
+  LoggerUtils::StreamBufferSupervisor *Logger::getStreamBufferSupervisorPtr() {
+    return _streamBufferSupervisorPtr_;
+  }
 
 
   // User Methods
   void Logger::quietLineJump() {
+    Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << std::endl;
   }
 
@@ -163,7 +168,7 @@ namespace {
     // _prefixFormat_ = "{TIME} {USER_HEADER} {SEVERITY} {FILELINE} {THREAD}";
     if( _prefixFormat_.empty() ) _prefixFormat_ = LOGGER_PREFIX_FORMAT;
 
-    // Reset the prefix
+    // reset the prefix
     _currentPrefix_ = LoggerUtils::stripStringUnicode(_prefixFormat_); // remove potential colors
 
     // {SEVERITY} -> at least MINIMAL level -> LATER, can introduce repeated space in the prefix!
@@ -350,7 +355,6 @@ namespace {
 
   // Setup Methods
   void Logger::setupStreamBufferSupervisor(){
-
     if(_streamBufferSupervisorPtr_ != nullptr) return;
     _streamBufferSupervisorPtr_ = new LoggerUtils::StreamBufferSupervisor(); // this object can't be deleted -> that's why we can't directly override with the logger class
     Logger::setupOutputFile();
@@ -395,5 +399,15 @@ namespace {
   std::string Logger::_outputFileName_;
 
 }
+
+#define LoggerInitializerImpl( lambdaInit ) \
+  static void* LoggerInitPlaceHolder = []{ \
+    try{ lambdaInit(); }         \
+    catch( ... ){                  \
+      LogFatal << "Error occurred during LoggerInit within the lamda instruction. Please check." << std::endl; \
+      throw std::runtime_error("Error occurred during LoggerInit"); \
+    } \
+    return nullptr; \
+  }();
 
 #endif //SIMPLE_CPP_LOGGER_LOGGER_IMPL_H

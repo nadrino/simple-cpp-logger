@@ -23,6 +23,8 @@
 #define LogDebug       (Logger{Logger::LogLevel::DEBUG,    __FILENAME__, __LINE__})
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILENAME__, __LINE__})
 
+// To setup the logger in a given source file
+#define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
 
 namespace {
 
@@ -63,6 +65,7 @@ namespace {
     static const LogLevel & getMaxLogLevel();
     static std::string getPrefixString();                                // LogWarning.getPrefixString()
     static std::string getPrefixString(const Logger& loggerConstructor); // Logger::getPrefixString(LogWarning)
+    static LoggerUtils::StreamBufferSupervisor *getStreamBufferSupervisorPtr();
 
     //! Misc
     static void quietLineJump();
