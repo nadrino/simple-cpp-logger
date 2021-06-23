@@ -55,12 +55,15 @@ namespace {
     static void setMaxLogLevel(const Logger& logger_);  // Example: Logger::setMaxLogLevel(LogDebug);
     static void setMaxLogLevel();                       // Example: LogDebug.setMaxLogLevel();
     static void setEnableColors(bool enableColors_);
+    static void setCleanLineBeforePrint(bool cleanLineBeforePrint);
     static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
     static void setPrefixLevel(const PrefixLevel &prefixLevel_);
     static void setUserHeaderStr(const std::string &userHeaderStr_);
     static void setPrefixFormat(const std::string &prefixFormat_);
 
     //! Getters
+    static bool isCleanLineBeforePrint();
+
     static int getMaxLogLevelInt();
     static const LogLevel & getMaxLogLevel();
     static std::string getPrefixString();                                // LogWarning.getPrefixString()
@@ -69,7 +72,7 @@ namespace {
 
     //! Misc
     static void quietLineJump();
-    static void moveCursorBack( int nLines_ );
+    static void moveCursorBack( int nLines_, bool clearLines_ = false );
     static void clearLine();
 
     //! Non-static Methods

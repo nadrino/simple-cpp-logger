@@ -43,6 +43,9 @@ namespace {
   void Logger::setEnableColors(bool enableColors_) {
     _enableColors_ = enableColors_;
   }
+  void Logger::setCleanLineBeforePrint(bool cleanLineBeforePrint) {
+    _cleanLineBeforePrint_ = cleanLineBeforePrint;
+  }
   void Logger::setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_) {
     _propagateColorsOnUserHeader_ = propagateColorsOnUserHeader_;
   }
@@ -57,6 +60,9 @@ namespace {
   }
 
   // Getters
+  bool Logger::isCleanLineBeforePrint() {
+    return _cleanLineBeforePrint_;
+  }
   int Logger::getMaxLogLevelInt() {
     return static_cast<int>(_maxLogLevel_);
   }
@@ -81,10 +87,17 @@ namespace {
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << std::endl;
   }
-  void Logger::moveCursorBack( int nLines_ ){
+  void Logger::moveCursorBack( int nLines_, bool clearLines_ ){
     if( nLines_ <= 0 ) return;
     Logger::setupStreamBufferSupervisor(); // in case it was not
-    *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[" << nLines_ << ";1F";
+    if( not clearLines_ ){
+      *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[" << nLines_ << ";1F";
+    }
+    else{
+      for( int iLine = 0 ; iLine < nLines_ ; iLine++ ){
+        Logger::moveCursorBack(1); Logger::clearLine();
+      }
+    }
   }
   void Logger::clearLine(){
     Logger::setupStreamBufferSupervisor(); // in case it was not
@@ -340,19 +353,18 @@ namespace {
 
       // If '\r' is detected, trigger Newline to reprint the header
       if( _streamBufferSupervisorPtr_->getLastChar() == '\r' ){
-        // Clean the line if the option is enabled and the terminal width is measurable
-        if( _cleanLineBeforePrint_ ){
-          *_streamBufferSupervisorPtr_ << "\033[1K";
-        }
         _isNewLine_ = true;
       }
-
       if( _streamBufferSupervisorPtr_->getLastChar() == '\n' ){
         _isNewLine_ = true;
       }
 
       // Start printing
       if(_isNewLine_){
+        if( _cleanLineBeforePrint_ ){
+          Logger::clearLine();
+//          *_streamBufferSupervisorPtr_ << "\033[1K";
+        }
         Logger::buildCurrentPrefix();
         *_streamBufferSupervisorPtr_ << _currentPrefix_;
         _isNewLine_ = false;
