@@ -69,6 +69,8 @@ namespace {
 
     //! Misc
     static void quietLineJump();
+    static void moveCursorBack( int nLines_ );
+    static void clearLine();
 
     //! Non-static Methods
     // For printf-style calls

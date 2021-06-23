@@ -166,6 +166,24 @@ int main(){
 
   Logger::quietLineJump();
 
+  for( int iPrint = 0 ; iPrint < 5 ; iPrint++ ){
+    LogWarning << "iPrint #" << iPrint << std::endl;
+    LogWarning << "Second line... #" << iPrint << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds (1000));
+    Logger::moveCursorBack(2);
+  }
+  LogWarning << std::endl << std::endl;
+
+  Logger::quietLineJump();
+
+  LogInfo << "This line will be erased in 2sec..." << std::flush;
+  std::this_thread::sleep_for(std::chrono::seconds (2));
+  LogInfo.clearLine();
+  std::this_thread::sleep_for(std::chrono::seconds (2));
+  LogInfo << "New line appeared instead" << std::endl;
+
+  Logger::quietLineJump();
+
 #endif
 
 

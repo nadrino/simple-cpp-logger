@@ -81,6 +81,16 @@ namespace {
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << std::endl;
   }
+  void Logger::moveCursorBack( int nLines_ ){
+    if( nLines_ <= 0 ) return;
+    Logger::setupStreamBufferSupervisor(); // in case it was not
+    *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[" << nLines_ << ";1F";
+  }
+  void Logger::clearLine(){
+    Logger::setupStreamBufferSupervisor(); // in case it was not
+    *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[1K" << "\r";
+//    Logger::moveCursorBack(1);
+  }
 
   //! Non-static Methods
   // For printf-style calls
