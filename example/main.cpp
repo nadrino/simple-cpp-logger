@@ -170,7 +170,7 @@ int main(){
     LogWarning << "iPrint #" << iPrint << std::endl;
     LogWarning << "Second line... #" << iPrint << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds (1000));
-    Logger::moveBackTerminalCursor(2);
+    Logger::moveTerminalCursorBack(2);
   }
   LogWarning << std::endl << std::endl;
 

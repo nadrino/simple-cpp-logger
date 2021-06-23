@@ -72,8 +72,8 @@ namespace {
 
     //! Misc
     static void quietLineJump();
-    static void moveBackTerminalCursor(int nLines_, bool clearLines_ = false );
-    static void moveForwardTerminalCursor(int nLines_, bool clearLines_ = false );
+    static void moveTerminalCursorBack(int nLines_, bool clearLines_ = false );
+    static void moveTerminalCursorForward(int nLines_, bool clearLines_ = false );
     static void clearLine();
 
     //! Non-static Methods

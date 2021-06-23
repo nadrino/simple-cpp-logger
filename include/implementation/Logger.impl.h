@@ -88,7 +88,7 @@ namespace {
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << std::endl;
   }
-  void Logger::moveBackTerminalCursor(int nLines_, bool clearLines_ ){
+  void Logger::moveTerminalCursorBack(int nLines_, bool clearLines_ ){
     if( nLines_ <= 0 ) return;
     Logger::setupStreamBufferSupervisor(); // in case it was not
 
@@ -98,12 +98,12 @@ namespace {
     }
     else{
       for( int iLine = 0 ; iLine < nLines_ ; iLine++ ){
-        Logger::moveBackTerminalCursor(1);
+        Logger::moveTerminalCursorBack(1);
         Logger::clearLine();
       }
     }
   }
-  void Logger::moveForwardTerminalCursor(int nLines_, bool clearLines_ ){
+  void Logger::moveTerminalCursorForward(int nLines_, bool clearLines_ ){
     if( nLines_ <= 0 ) return;
     Logger::setupStreamBufferSupervisor(); // in case it was not
 
@@ -113,7 +113,7 @@ namespace {
     }
     else{
       for( int iLine = 0 ; iLine < nLines_ ; iLine++ ){
-        Logger::moveForwardTerminalCursor(1);
+        Logger::moveTerminalCursorForward(1);
         Logger::clearLine();
       }
     }
@@ -121,7 +121,6 @@ namespace {
   void Logger::clearLine(){
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[1K" << "\r";
-//    Logger::moveBackTerminalCursor(1);
   }
 
   //! Non-static Methods
