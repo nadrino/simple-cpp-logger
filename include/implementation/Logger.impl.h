@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <memory>    // For std::unique_ptr
 #include <Logger.h>
+#include <cmath>        // std::abs
 
 #include <cstdio>
 #include <iostream>
@@ -87,22 +88,26 @@ namespace {
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << std::endl;
   }
-  void Logger::moveCursorBack( int nLines_, bool clearLines_ ){
-    if( nLines_ <= 0 ) return;
+  void Logger::moveBackTerminalCursor(int nLines_, bool clearLines_ ){
+    if( nLines_ == 0 ) return;
     Logger::setupStreamBufferSupervisor(); // in case it was not
+
+    // VT100 commands
     if( not clearLines_ ){
       *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[" << nLines_ << ";1F";
     }
     else{
-      for( int iLine = 0 ; iLine < nLines_ ; iLine++ ){
-        Logger::moveCursorBack(1); Logger::clearLine();
+      for( int iLine = 0 ; iLine < std::abs(nLines_) ; iLine++ ){
+        if(nLines_ > 0) Logger::moveBackTerminalCursor(1);
+        if(nLines_ < 0) Logger::moveBackTerminalCursor(-1);
+        Logger::clearLine();
       }
     }
   }
   void Logger::clearLine(){
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[1K" << "\r";
-//    Logger::moveCursorBack(1);
+//    Logger::moveBackTerminalCursor(1);
   }
 
   //! Non-static Methods
