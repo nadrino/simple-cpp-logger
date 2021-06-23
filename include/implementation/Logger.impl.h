@@ -120,7 +120,7 @@ namespace {
   }
   void Logger::clearLine(){
     Logger::setupStreamBufferSupervisor(); // in case it was not
-    *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[1K" << "\r";
+    *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[2K" << "\r";
   }
 
   //! Non-static Methods
@@ -370,17 +370,21 @@ namespace {
     else{
 
       // If '\r' is detected, trigger Newline to reprint the header
-      if( _streamBufferSupervisorPtr_->getLastChar() == '\r' ){
+      if(  _streamBufferSupervisorPtr_->getLastChar() == '\r'
+        or _streamBufferSupervisorPtr_->getLastChar() == '\n'
+      ){
         _isNewLine_ = true;
-      }
-      if( _streamBufferSupervisorPtr_->getLastChar() == '\n' ){
-        _isNewLine_ = true;
+//        std::cerr << "\a";
+//        sleep(1);
       }
 
       // Start printing
       if(_isNewLine_){
         if( _cleanLineBeforePrint_ ){
           Logger::clearLine();
+//          std::cerr << "lol:" << formattedString << std::endl;
+//          std::cerr << "\a";
+//          sleep(1);
 //          *_streamBufferSupervisorPtr_ << "\033[1K";
         }
         Logger::buildCurrentPrefix();
