@@ -380,13 +380,7 @@ namespace {
 
       // Start printing
       if(_isNewLine_){
-        if( _cleanLineBeforePrint_ ){
-          Logger::clearLine();
-//          std::cerr << "lol:" << formattedString << std::endl;
-//          std::cerr << "\a";
-//          sleep(1);
-//          *_streamBufferSupervisorPtr_ << "\033[1K";
-        }
+        if( _cleanLineBeforePrint_ ){ Logger::clearLine(); }
         Logger::buildCurrentPrefix();
         *_streamBufferSupervisorPtr_ << _currentPrefix_;
         _isNewLine_ = false;
