@@ -89,7 +89,7 @@ namespace {
     *_streamBufferSupervisorPtr_ << std::endl;
   }
   void Logger::moveBackTerminalCursor(int nLines_, bool clearLines_ ){
-    if( nLines_ == 0 ) return;
+    if( nLines_ <= 0 ) return;
     Logger::setupStreamBufferSupervisor(); // in case it was not
 
     // VT100 commands
@@ -97,9 +97,23 @@ namespace {
       *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[" << nLines_ << ";1F";
     }
     else{
-      for( int iLine = 0 ; iLine < std::abs(nLines_) ; iLine++ ){
-        if(nLines_ > 0) Logger::moveBackTerminalCursor(1);
-        if(nLines_ < 0) Logger::moveBackTerminalCursor(-1);
+      for( int iLine = 0 ; iLine < nLines_ ; iLine++ ){
+        Logger::moveBackTerminalCursor(1);
+        Logger::clearLine();
+      }
+    }
+  }
+  void Logger::moveForwardTerminalCursor(int nLines_, bool clearLines_ ){
+    if( nLines_ <= 0 ) return;
+    Logger::setupStreamBufferSupervisor(); // in case it was not
+
+    // VT100 commands
+    if( not clearLines_ ){
+      *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[" << nLines_ << ";1E";
+    }
+    else{
+      for( int iLine = 0 ; iLine < nLines_ ; iLine++ ){
+        Logger::moveForwardTerminalCursor(1);
         Logger::clearLine();
       }
     }
