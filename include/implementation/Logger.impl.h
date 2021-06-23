@@ -374,8 +374,6 @@ namespace {
         or _streamBufferSupervisorPtr_->getLastChar() == '\n'
       ){
         _isNewLine_ = true;
-//        std::cerr << "\a";
-//        sleep(1);
       }
 
       // Start printing
