@@ -122,6 +122,9 @@ namespace {
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[2K" << "\r";
   }
+  void Logger::triggerNewLine(){
+    _isNewLine_ = true;
+  }
 
   //! Non-static Methods
   // For printf-style calls
