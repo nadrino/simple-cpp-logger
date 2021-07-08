@@ -353,7 +353,7 @@ namespace {
         // If the last line is empty, don't print since a \n will be added.
         // Let the parent function do it.
         if (i_line == (slicedString.size()-1) and slicedString[i_line].empty()) {
-          if(formattedString.back() == '\n') _isNewLine_ = true;
+          if( formattedString.back() == '\n' ) _isNewLine_ = true;
           break;
         }
 
@@ -363,13 +363,38 @@ namespace {
         // Recurse
         printFormat(slicedString[i_line].c_str());
 
-        // let the last line jump be handle by the user (or the parent function)
+        // let the last line jump be handled by the user (or the parent function)
         if (i_line != (slicedString.size() - 1)) {
           *_streamBufferSupervisorPtr_ << std::endl;
         }
 
       } // for each line
     } // If multiline
+    else if( LoggerUtils::doesStringContainsSubstring(formattedString, "\r") ){
+      // Print each line individually
+      auto slicedString = LoggerUtils::splitString(formattedString, "\r");
+      for (int i_line = 0; i_line < int(slicedString.size()); i_line++) {
+
+        // If the last line is empty, don't print since a \n will be added.
+        // Let the parent function do it.
+        if (i_line == (slicedString.size()-1) and slicedString[i_line].empty()) {
+          if( formattedString.back() == '\r' ) _isNewLine_ = true;
+          break;
+        }
+
+        // The next printed line should contain the prefix
+        _isNewLine_ = true;
+
+        // Recurse
+        printFormat(slicedString[i_line].c_str());
+
+        // let the last trail back be handled by the user (or the parent function)
+        if (i_line != (slicedString.size() - 1)) {
+          *_streamBufferSupervisorPtr_ << "\r";
+        }
+
+      } // for each line
+    }
     else{
 
       // If '\r' is detected, trigger Newline to reprint the header
