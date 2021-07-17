@@ -58,7 +58,7 @@ namespace LoggerUtils{
     std::streambuf* _streamBufferPtr_{nullptr};
     std::ofstream _outFileStream_;
     std::ostream& _outputStream_ = std::cout;
-    char _lastChar_{traits_type::eof()};
+    char _lastChar_{static_cast<char>(traits_type::eof())};
   };
 
   //! String Utils
