@@ -75,6 +75,7 @@ namespace {
     static void moveTerminalCursorBack(int nLines_, bool clearLines_ = false );
     static void moveTerminalCursorForward(int nLines_, bool clearLines_ = false );
     static void clearLine();
+    static void triggerNewLine();
 
     //! Non-static Methods
     // For printf-style calls
