@@ -113,7 +113,7 @@ namespace {
     static void setupOutputFile();
 
     // Assertion
-    void setAssertionTrigger(bool isAssertionTriggered_);
+    void setAssertionTrigger(bool expectedTrueExpression_);
 
 
   private:
