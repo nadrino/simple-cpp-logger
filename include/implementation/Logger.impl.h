@@ -131,6 +131,7 @@ namespace {
   template<typename... TT> void Logger::operator()(const char *fmt_str, TT &&... args) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return;
+    if (_isAssertionMode_ and not _isAssertionTriggered_) return; // don't print the error message
 
     Logger::printFormat(fmt_str, std::forward<TT>(args)...);
     if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
@@ -142,6 +143,7 @@ namespace {
   template<typename T> Logger &Logger::operator<<(const T &data) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
+    if (_isAssertionMode_ and not _isAssertionTriggered_) return *this; // don't print the error message
 
     std::stringstream dataStream;
     dataStream << data;
@@ -183,6 +185,17 @@ namespace {
   }
   Logger::~Logger() {
     _loggerMutex_.unlock();
+  }
+
+  Logger Logger::makeAssertion(char const * fileName_, const int &lineNumber_, bool expressionThatShouldBeTrue_){
+    auto l = Logger({Logger::LogLevel::ERROR, fileName_, lineNumber_});
+    l.setAssertionTrigger(expressionThatShouldBeTrue_);
+    return l;
+  }
+  void Logger::throwIfAssertionTriggered(){
+    if( _isAssertionMode_ and _isAssertionTriggered_ ){
+      throw std::runtime_error("Logger assertion triggered.");
+    }
   }
 
   // Deprecated (left here for compatibility)
@@ -447,6 +460,11 @@ namespace {
     _streamBufferSupervisorPtr_->openOutFileStream(_outputFileName_);
   }
 
+  // Assertion
+  void Logger::setAssertionTrigger(bool expectedTrueExpression_){
+    _isAssertionMode_ = true;
+    _isAssertionTriggered_ = (not expectedTrueExpression_);
+  }
 
 
   // Private Members

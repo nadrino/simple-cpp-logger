@@ -23,6 +23,10 @@
 #define LogDebug       (Logger{Logger::LogLevel::DEBUG,    __FILENAME__, __LINE__})
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILENAME__, __LINE__})
 
+// To make assertion
+#define LogAssert(expectedTrueCondition_, errorMessage_)   \
+        (Logger::makeAssertion(__FILENAME__, __LINE__, expectedTrueCondition_) << errorMessage_).throwIfAssertionTriggered();
+
 // To setup the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
 
@@ -89,6 +93,9 @@ namespace {
     Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_);
     virtual ~Logger();
 
+    static Logger makeAssertion(char const * fileName_, const int &lineNumber_, bool expressionThatShouldBeTrue_);
+    void throwIfAssertionTriggered();
+
     // Deprecated (left here for compatibility)
     static void setMaxLogLevel(int maxLogLevel_);
     static void setMaxLogLevel(const LogLevel &maxLogLevel_);
@@ -104,6 +111,10 @@ namespace {
     // Setup Methods
     static void setupStreamBufferSupervisor();
     static void setupOutputFile();
+
+    // Assertion
+    void setAssertionTrigger(bool isAssertionTriggered_);
+
 
   private:
 
@@ -128,6 +139,10 @@ namespace {
     static LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_;
     static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
     static std::string _outputFileName_;
+
+    // Non static
+    bool _isAssertionMode_{false};
+    bool _isAssertionTriggered_{false};
 
   };
 
