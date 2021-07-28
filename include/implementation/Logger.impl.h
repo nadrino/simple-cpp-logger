@@ -131,7 +131,6 @@ namespace {
   template<typename... TT> void Logger::operator()(const char *fmt_str, TT &&... args) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return;
-    if (_isAssertionMode_ and not _isAssertionTriggered_) return; // don't print the error message
 
     Logger::printFormat(fmt_str, std::forward<TT>(args)...);
     if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
@@ -143,7 +142,6 @@ namespace {
   template<typename T> Logger &Logger::operator<<(const T &data) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
-    if (_isAssertionMode_ and not _isAssertionTriggered_) return *this; // don't print the error message
 
     std::stringstream dataStream;
     dataStream << data;
@@ -162,7 +160,6 @@ namespace {
 
     // Handling std::endl
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
-    if (_isAssertionMode_ and not _isAssertionTriggered_) return *this; // don't print the error message
 
     *_streamBufferSupervisorPtr_ << f;
     _isNewLine_ = true;
@@ -188,16 +185,9 @@ namespace {
     _loggerMutex_.unlock();
   }
 
-  Logger Logger::makeAssertion(char const * fileName_, const int &lineNumber_, bool expressionThatShouldBeTrue_){
-    auto l = Logger({Logger::LogLevel::ERROR, fileName_, lineNumber_});
-    l.setAssertionTrigger(expressionThatShouldBeTrue_);
-    return l;
-  }
-  void Logger::throwIfAssertionTriggered(const std::string& assertConditionStr_) const{
-    if( _isAssertionMode_ and _isAssertionTriggered_ ){
-      if( assertConditionStr_.empty() ) throw std::runtime_error("logger assertion triggered.");
-      else throw std::runtime_error("logger assertion triggered: " + assertConditionStr_);
-    }
+  void Logger::throwError(const std::string& errorStr_) {
+    if( errorStr_.empty() ) throw std::runtime_error("exception thrown by the logger.");
+    else throw std::runtime_error("exception thrown by the logger: " + errorStr_);
   }
 
   // Deprecated (left here for compatibility)
@@ -461,13 +451,6 @@ namespace {
     LoggerUtils::replaceSubstringInsideInputString(_outputFileName_, "{TIME}", ss.str());
     _streamBufferSupervisorPtr_->openOutFileStream(_outputFileName_);
   }
-
-  // Assertion
-  void Logger::setAssertionTrigger(bool expectedTrueExpression_){
-    _isAssertionMode_ = true;
-    _isAssertionTriggered_ = (not expectedTrueExpression_);
-  }
-
 
   // Private Members
   bool Logger::_enableColors_ = LOGGER_ENABLE_COLORS;

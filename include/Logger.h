@@ -23,12 +23,10 @@
 #define LogDebug       (Logger{Logger::LogLevel::DEBUG,    __FILENAME__, __LINE__})
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILENAME__, __LINE__})
 
-// To make assertion
-#define LogAssert(expectedTrueCondition_, errorMessage_)   \
-        (Logger::makeAssertion(__FILENAME__, __LINE__, expectedTrueCondition_) \
-        << errorMessage_).throwIfAssertionTriggered(#expectedTrueCondition_)
-#define LogThrowIf(isThrowing_, errorMessage_)  LogAssert(not (isThrowing_), errorMessage_)
-#define LogThrow(errorMessage_) LogThrowIf(true, errorMessage_)
+// To make assertions
+#define LogThrowIf(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << errorMessage_ << std::endl).throwError(#isThrowing_);}
+#define LogAssert(assertion_, errorMessage_)    LogThrowIf(not (assertion_), errorMessage_)
+#define LogThrow(errorMessage_)                 LogThrowIf(true, errorMessage_)
 
 
 // To setup the logger in a given source file
@@ -97,8 +95,7 @@ namespace {
     Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_);
     virtual ~Logger();
 
-    static Logger makeAssertion(char const * fileName_, const int &lineNumber_, bool expressionThatShouldBeTrue_);
-    void throwIfAssertionTriggered(const std::string& assertConditionStr_ = "") const;
+    static void throwError(const std::string& errorStr_ = "");
 
     // Deprecated (left here for compatibility)
     static void setMaxLogLevel(int maxLogLevel_);
@@ -115,10 +112,6 @@ namespace {
     // Setup Methods
     static void setupStreamBufferSupervisor();
     static void setupOutputFile();
-
-    // Assertion
-    void setAssertionTrigger(bool expectedTrueExpression_);
-
 
   private:
 
@@ -143,10 +136,6 @@ namespace {
     static LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_;
     static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
     static std::string _outputFileName_;
-
-    // Non static
-    bool _isAssertionMode_{false};
-    bool _isAssertionTriggered_{false};
 
   };
 
