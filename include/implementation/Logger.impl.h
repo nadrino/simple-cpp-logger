@@ -162,6 +162,7 @@ namespace {
 
     // Handling std::endl
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
+    if (_isAssertionMode_ and not _isAssertionTriggered_) return *this; // don't print the error message
 
     *_streamBufferSupervisorPtr_ << f;
     _isNewLine_ = true;
@@ -192,9 +193,10 @@ namespace {
     l.setAssertionTrigger(expressionThatShouldBeTrue_);
     return l;
   }
-  void Logger::throwIfAssertionTriggered(){
+  void Logger::throwIfAssertionTriggered(const std::string& assertConditionStr_) const{
     if( _isAssertionMode_ and _isAssertionTriggered_ ){
-      throw std::runtime_error("Logger assertion triggered.");
+      if( assertConditionStr_.empty() ) throw std::runtime_error("logger assertion triggered.");
+      else throw std::runtime_error("logger assertion triggered: " + assertConditionStr_);
     }
   }
 

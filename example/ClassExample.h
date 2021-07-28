@@ -1,5 +1,5 @@
 //
-// Created by Adrien BLANCHET on 25/04/2021.
+// Created by Nadrino on 25/04/2021.
 //
 
 #ifndef SIMPLE_CPP_LOGGER_CLASSEXAMPLE_H

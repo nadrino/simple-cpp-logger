@@ -25,7 +25,10 @@
 
 // To make assertion
 #define LogAssert(expectedTrueCondition_, errorMessage_)   \
-        (Logger::makeAssertion(__FILENAME__, __LINE__, expectedTrueCondition_) << errorMessage_).throwIfAssertionTriggered();
+        (Logger::makeAssertion(__FILENAME__, __LINE__, expectedTrueCondition_) \
+        << errorMessage_).throwIfAssertionTriggered(#expectedTrueCondition_)
+#define LogThrowIf(isThrowing_, errorMessage_)  LogAssert(not (isThrowing_), errorMessage_)
+
 
 // To setup the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
@@ -94,7 +97,7 @@ namespace {
     virtual ~Logger();
 
     static Logger makeAssertion(char const * fileName_, const int &lineNumber_, bool expressionThatShouldBeTrue_);
-    void throwIfAssertionTriggered();
+    void throwIfAssertionTriggered(const std::string& assertConditionStr_ = "") const;
 
     // Deprecated (left here for compatibility)
     static void setMaxLogLevel(int maxLogLevel_);
