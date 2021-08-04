@@ -222,42 +222,6 @@ namespace LoggerUtils{
     return outStr;
   }
 
-
-  template<typename T, typename TT> inline bool showProgressBar(const T& iCurrent_, const TT& iTotal_){
-    //    if( // Only the main thread
-    //      ProgressBarUtils::_selectedThreadId_ != std::this_thread::get_id()
-    //      ){
-    //      return false;
-    //    }
-
-    if( // REQUIRED TO PRINTOUT
-    iCurrent_ == 0 // First call
-    or ProgressBarUtils::lastDisplayedPercentValue == -1 // never printed before
-    or ( std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::high_resolution_clock::now() - ProgressBarUtils::lastDisplayedTimePoint
-      ).count() >= ProgressBarUtils::maxRefreshRateInMilliSec
-      )
-      or iCurrent_ + 1 >= iTotal_ // last entry (mandatory to print at least once: need to print endl)
-      ){
-
-      int percent = int(std::round(double(iCurrent_) / double(iTotal_) * 100.));
-
-      if( percent >= 100 ){ percent = 100; }
-      else if( percent < 0) percent = 0;
-
-      if( // EXCLUSION CASES
-      percent == ProgressBarUtils::lastDisplayedPercentValue // already printed
-      ){
-        return false;
-      }
-
-      // OK!
-      return true;
-    }
-
-    return false;
-  }
-
 }
 
 #endif //SIMPLE_CPP_LOGGER_LOGGERUTILS_IMPL_H
