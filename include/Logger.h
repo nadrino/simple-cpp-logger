@@ -32,6 +32,8 @@
 // To setup the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
 
+
+// Implementation
 namespace {
 
   class Logger {

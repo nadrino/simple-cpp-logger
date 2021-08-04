@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include "thread"
 
 // Header
 namespace LoggerUtils{
