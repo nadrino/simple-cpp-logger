@@ -68,6 +68,7 @@ namespace {
     static void setPrefixLevel(const PrefixLevel &prefixLevel_);
     static void setUserHeaderStr(const std::string &userHeaderStr_);
     static void setPrefixFormat(const std::string &prefixFormat_);
+    static void setIndentStr(const std::string &indentStr_);
 
     //! Getters
     static bool isCleanLineBeforePrint();
@@ -127,6 +128,7 @@ namespace {
     static PrefixLevel _prefixLevel_;
     static std::string _userHeaderStr_;
     static std::string _prefixFormat_;
+    static std::string _indentStr_;
 
     // internal
     static LogLevel _currentLogLevel_;

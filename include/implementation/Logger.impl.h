@@ -59,6 +59,9 @@ namespace {
   void Logger::setPrefixFormat(const std::string &prefixFormat_) {
     _prefixFormat_ = prefixFormat_;
   }
+  void Logger::setIndentStr(const std::string &indentStr_){
+    _indentStr_ = indentStr_;
+  }
 
   // Getters
   bool Logger::isCleanLineBeforePrint() {
@@ -413,7 +416,7 @@ namespace {
       if(_isNewLine_){
         if( _cleanLineBeforePrint_ ){ Logger::clearLine(); }
         Logger::buildCurrentPrefix();
-        *_streamBufferSupervisorPtr_ << _currentPrefix_;
+        *_streamBufferSupervisorPtr_ << _currentPrefix_ << _indentStr_;
         _isNewLine_ = false;
       }
 
@@ -462,6 +465,7 @@ namespace {
   Logger::PrefixLevel Logger::_prefixLevel_(static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL));
   std::string Logger::_userHeaderStr_;
   std::string Logger::_prefixFormat_;
+  std::string Logger::_indentStr_;
 
   std::string Logger::_currentPrefix_;
   Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
