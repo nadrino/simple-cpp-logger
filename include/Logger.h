@@ -24,7 +24,7 @@
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILENAME__, __LINE__})
 
 // To make assertions
-#define LogThrowIf(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << errorMessage_ << std::endl).throwError(#isThrowing_);}
+#define LogThrowIf(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
 #define LogAssert(assertion_, errorMessage_)    LogThrowIf(not (assertion_), errorMessage_)
 #define LogThrow(errorMessage_)                 LogThrowIf(true, errorMessage_)
 
