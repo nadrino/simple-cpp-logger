@@ -216,6 +216,8 @@ namespace LoggerUtils{
     char buf[MAX_PATH];
     GetModuleFileNameA(nullptr, buf, MAX_PATH);
     outStr = buf;
+#elif defined(__SWITCH__)
+    outStr = "UNDEFINED";
 #else
     outStr = __progname;
 #endif
