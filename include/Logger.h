@@ -13,6 +13,7 @@
 #include "implementation/LoggerUtils.h"
 #include "implementation/LoggerParameters.h"
 
+#define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
 
 // Here is what you want to use
 #define LogFatal       (Logger{Logger::LogLevel::FATAL,    __FILENAME__, __LINE__})
@@ -24,7 +25,9 @@
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILENAME__, __LINE__})
 
 // To make assertions
-#define LogThrowIf(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
+#define LogThrowIf1(isThrowing_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< #isThrowing_ << std::endl).throwError(#isThrowing_);}
+#define LogThrowIf2(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
+#define LogThrowIf(...) GET_OVERLOADED_MACRO2(__VA_ARGS__, LogThrowIf2, LogThrowIf1)(__VA_ARGS__)
 #define LogAssert(assertion_, errorMessage_)    LogThrowIf(not (assertion_), errorMessage_)
 #define LogThrow(errorMessage_)                 LogThrowIf(true, errorMessage_)
 
