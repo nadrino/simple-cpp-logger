@@ -84,6 +84,9 @@ namespace {
   LoggerUtils::StreamBufferSupervisor *Logger::getStreamBufferSupervisorPtr() {
     return _streamBufferSupervisorPtr_;
   }
+  const std::string& Logger::getIndentStr(){
+    return _indentStr_;
+  }
 
 
   // User Methods
