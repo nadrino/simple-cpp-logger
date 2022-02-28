@@ -100,7 +100,7 @@ namespace {
 
     // VT100 commands
     if( not clearLines_ ){
-      *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[" << nLines_ << ";1F";
+      *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[" << nLines_ << "F";
     }
     else{
       for( int iLine = 0 ; iLine < nLines_ ; iLine++ ){
