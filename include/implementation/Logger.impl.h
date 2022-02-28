@@ -245,11 +245,11 @@ namespace {
     // {FILE} and {LINE} -> at least DEBUG level
     strBuffer = "";
     if(Logger::_prefixLevel_ >= Logger::PrefixLevel::DEBUG){
-      strBuffer += "\x1b[90m"; // grey
+      if(_enableColors_) strBuffer += "\x1b[90m"; // grey
       strBuffer += _currentFileName_;
       strBuffer += ":";
       strBuffer += std::to_string(_currentLineNumber_);
-      strBuffer += "\033[0m";
+      if(_enableColors_) strBuffer += "\033[0m";
     }
     LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{FILELINE}", strBuffer);
 
@@ -257,7 +257,9 @@ namespace {
     strBuffer = "";
     if(Logger::_prefixLevel_ >= Logger::PrefixLevel::FULL){
       std::stringstream ss;
-      ss << "\x1b[90m(thread: " << std::this_thread::get_id() << ")\033[0m";
+      if(_enableColors_) ss << "\x1b[90m";
+      ss << "(thread: " << std::this_thread::get_id();
+      if(_enableColors_) ss << ")\033[0m";
       strBuffer = ss.str();
     }
     LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{THREAD}", strBuffer);
