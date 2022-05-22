@@ -6,23 +6,24 @@
 #define SIMPLE_CPP_LOGGER_LOGGER_H
 
 
+#include "implementation/LoggerParameters.h"
+#include "implementation/LoggerUtils.h"
+
 #include <string>
 #include <mutex>
 #include <vector>
 
-#include "implementation/LoggerUtils.h"
-#include "implementation/LoggerParameters.h"
 
 #define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
 
 // Here is what you want to use
-#define LogFatal       (Logger{Logger::LogLevel::FATAL,    __FILENAME__, __LINE__})
-#define LogError       (Logger{Logger::LogLevel::ERROR,    __FILENAME__, __LINE__})
-#define LogAlert       (Logger{Logger::LogLevel::ALERT,    __FILENAME__, __LINE__})
-#define LogWarning     (Logger{Logger::LogLevel::WARNING,  __FILENAME__, __LINE__})
-#define LogInfo        (Logger{Logger::LogLevel::INFO,     __FILENAME__, __LINE__})
-#define LogDebug       (Logger{Logger::LogLevel::DEBUG,    __FILENAME__, __LINE__})
-#define LogTrace       (Logger{Logger::LogLevel::TRACE,    __FILENAME__, __LINE__})
+#define LogFatal       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__})
+#define LogError       (Logger{Logger::LogLevel::ERROR,    FILENAME, __LINE__})
+#define LogAlert       (Logger{Logger::LogLevel::ALERT,    FILENAME, __LINE__})
+#define LogWarning     (Logger{Logger::LogLevel::WARNING,  FILENAME, __LINE__})
+#define LogInfo        (Logger{Logger::LogLevel::INFO,     FILENAME, __LINE__})
+#define LogDebug       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__})
+#define LogTrace       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__})
 
 // To make assertions
 #define LogThrowIf1(isThrowing_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< #isThrowing_ << std::endl).throwError(#isThrowing_);}

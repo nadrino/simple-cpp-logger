@@ -5,6 +5,9 @@
 #ifndef SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
 #define SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
 
+
+#include "LoggerParameters.h"
+
 #include <cstdarg>
 #include <cstdio>
 #include <ctime>
@@ -20,13 +23,10 @@
 #include <iomanip>
 #include <algorithm>
 #include <memory>    // For std::unique_ptr
-#include <Logger.h>
 #include <cmath>        // std::abs
-
 #include <cstdio>
 #include <iostream>
 
-#include <Logger.h>
 
 namespace {
 
@@ -237,7 +237,7 @@ namespace {
       time_t rawTime = std::time(nullptr);
       struct tm timeInfo = *localtime(&rawTime);
       std::stringstream ss;
-      ss << std::put_time(&timeInfo, "%H:%M:%S");
+      ss << std::put_time(&timeInfo, LOGGER_TIME_FORMAT);
       strBuffer += ss.str();
     }
     LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{TIME}", strBuffer);

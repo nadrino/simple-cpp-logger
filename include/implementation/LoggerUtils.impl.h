@@ -12,6 +12,7 @@
 #include <memory>
 #include <cstring> // strrchr
 #include "cmath"
+#include "vector"
 
 #if defined(_WIN32)
 // Windows
@@ -53,7 +54,7 @@
 extern char* __progname;
 
 // stripping the full path
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 // Implementation:
 namespace LoggerUtils{
@@ -187,7 +188,7 @@ namespace LoggerUtils{
     if (size <= 0) { throw std::runtime_error("Error during formatting."); }
     std::unique_ptr<char[]> buf(new char[size]);
     snprintf(buf.get(), size, strToFormat_.c_str(), args ...);
-    return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+    return {buf.get(), buf.get() + size - 1}; // We don't want the '\0' inside
   }
 
   // Hardware related tools
