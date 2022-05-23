@@ -361,26 +361,26 @@ namespace {
 
       // Print each line individually
       auto slicedString = LoggerUtils::splitString(formattedString, "\n");
-      for (int i_line = 0; i_line < int(slicedString.size()); i_line++) {
+      for( auto& line : slicedString ){
 
         // If the last line is empty, don't print since a \n will be added.
         // Let the parent function do it.
-        if (i_line == (slicedString.size()-1) and slicedString[i_line].empty()) {
+        if( line.empty() and &line == &slicedString.back() ){
           if( formattedString.back() == '\n' ) _isNewLine_ = true;
           break;
         }
 
-        // The next printed line should contain the prefix
-        _isNewLine_ = true;
-
-        // Recurse
-        printFormat(slicedString[i_line].c_str());
-
-        // let the last line jump be handled by the user (or the parent function)
-        if (i_line != (slicedString.size() - 1)) {
-          *_streamBufferSupervisorPtr_ << std::endl;
+        if( &line != &slicedString.front() ){
+          // The next printed line should contain the prefix
+          _isNewLine_ = true;
         }
 
+        // Recurse
+        printFormat(line.c_str());
+
+        // jump now!
+        if( &line != &slicedString.back() ){ *_streamBufferSupervisorPtr_ << std::endl; }
+        else {} // let the last line jump be handled by the user
       } // for each line
     } // If multiline
     else if( LoggerUtils::doesStringContainsSubstring(formattedString, "\r") ){
