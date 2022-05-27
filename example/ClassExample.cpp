@@ -6,10 +6,10 @@
 
 #include "Logger.h"
 
-LoggerInit([](){
+LoggerInit([]{
   // Careful with this! segfault won't be caught since it is run in a context of a global variable
   Logger::setUserHeaderStr("[ClassExample]");
-} )
+} );
 
 ClassExample::ClassExample() {
   Logger::setPrefixLevel(Logger::PrefixLevel::DEBUG);

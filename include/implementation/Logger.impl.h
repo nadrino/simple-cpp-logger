@@ -491,6 +491,6 @@ namespace {
       throw std::runtime_error("Error occurred during LoggerInit"); \
     } \
     return nullptr; \
-  }();
+  }()
 
 #endif //SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
