@@ -5,6 +5,8 @@
 #ifndef SIMPLE_CPP_LOGGER_LOGGER_H
 #define SIMPLE_CPP_LOGGER_LOGGER_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #include "implementation/LoggerParameters.h"
 #include "implementation/LoggerUtils.h"
