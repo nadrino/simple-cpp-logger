@@ -7,6 +7,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-variable"
 
 #include "implementation/LoggerParameters.h"
 #include "implementation/LoggerUtils.h"
