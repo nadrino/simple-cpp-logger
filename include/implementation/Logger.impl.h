@@ -386,11 +386,11 @@ namespace {
     else if( LoggerUtils::doesStringContainsSubstring(formattedString, "\r") ){
       // Print each line individually
       auto slicedString = LoggerUtils::splitString(formattedString, "\r");
-      for (int i_line = 0; i_line < int(slicedString.size()); i_line++) {
+      for (size_t iLine = 0; iLine < slicedString.size(); iLine++) {
 
         // If the last line is empty, don't print since a \n will be added.
         // Let the parent function do it.
-        if (i_line == (slicedString.size()-1) and slicedString[i_line].empty()) {
+        if (iLine == (slicedString.size() - 1) and slicedString[iLine].empty()) {
           if( formattedString.back() == '\r' ) _isNewLine_ = true;
           break;
         }
@@ -399,10 +399,10 @@ namespace {
         _isNewLine_ = true;
 
         // Recurse
-        printFormat(slicedString[i_line].c_str());
+        printFormat(slicedString[iLine].c_str());
 
         // let the last trail back be handled by the user (or the parent function)
-        if (i_line != (slicedString.size() - 1)) {
+        if (iLine != (slicedString.size() - 1)) {
           *_streamBufferSupervisorPtr_ << "\r";
         }
 
