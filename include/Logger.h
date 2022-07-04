@@ -18,6 +18,7 @@
 
 
 #define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
+#define GET_OVERLOADED_MACRO3(_1,_2,_3,NAME,...) NAME
 
 // Here is what you want to use
 #define LogFatal       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__})
@@ -40,6 +41,11 @@
 #define LogContinueIf1(isContinue_)  LogContinueIf2(isContinue_, #isContinue_)
 #define LogContinueIf(...) GET_OVERLOADED_MACRO2(__VA_ARGS__, LogContinueIf2, LogContinueIf1)(__VA_ARGS__)
 
+// Within functions
+#define LogReturnIf3(isReturn_, returnMessage_, returnObj_)  if(isReturn_){(LogWarning << "(" << __PRETTY_FUNCTION__ << "): "<< returnMessage_ << std::endl); return returnObj_; }
+#define LogReturnIf2(isReturn_, returnMessage_)  LogReturnIf3(isReturn_, returnMessage_, )
+#define LogReturnIf1(isReturn_)  LogReturnIf2(isReturn_, (#isReturn_))
+#define LogReturnIf(...) GET_OVERLOADED_MACRO3(__VA_ARGS__, LogReturnIf3, LogReturnIf2, LogReturnIf1)(__VA_ARGS__)
 
 // To setup the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
