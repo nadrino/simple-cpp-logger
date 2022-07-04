@@ -29,11 +29,16 @@
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__})
 
 // To make assertions
-#define LogThrowIf1(isThrowing_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< #isThrowing_ << std::endl).throwError(#isThrowing_);}
 #define LogThrowIf2(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
+#define LogThrowIf1(isThrowing_) LogThrowIf2(isThrowing_, #isThrowing_)
 #define LogThrowIf(...) GET_OVERLOADED_MACRO2(__VA_ARGS__, LogThrowIf2, LogThrowIf1)(__VA_ARGS__)
 #define LogAssert(assertion_, errorMessage_)    LogThrowIf(not (assertion_), errorMessage_)
 #define LogThrow(errorMessage_)                 LogThrowIf(true, errorMessage_)
+
+// Within loops
+#define LogContinueIf2(isContinue_, continueMessage_)  if(isContinue_){(LogWarning << "(" << __PRETTY_FUNCTION__ << "): "<< continueMessage_ << std::endl); continue; }
+#define LogContinueIf1(isContinue_)  LogContinueIf2(isContinue_, #isContinue_)
+#define LogContinueIf(...) GET_OVERLOADED_MACRO2(__VA_ARGS__, LogContinueIf2, LogContinueIf1)(__VA_ARGS__)
 
 
 // To setup the logger in a given source file
