@@ -172,6 +172,10 @@ namespace {
 
     return *this;
   }
+  Logger &Logger::operator()(bool condition_){
+    if( not condition_ ) Logger::_currentLogLevel_ = LogLevel::INVALID;
+    return *this;
+  }
 
   // C-tor D-tor
   Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_) {

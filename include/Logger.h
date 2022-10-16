@@ -65,7 +65,8 @@ namespace {
       WARNING = 3,
       INFO    = 4,
       DEBUG   = 5,
-      TRACE   = 6
+      TRACE   = 6,
+      INVALID = 7
     };
     enum class PrefixLevel {
       NONE        = 0,
@@ -111,6 +112,7 @@ namespace {
     // For std::cout-style calls
     template<typename T> Logger &operator<<(const T &data);
     Logger &operator<<(std::ostream &(*f)(std::ostream &));
+    Logger &operator()(bool condition_);
 
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
