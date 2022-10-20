@@ -75,6 +75,15 @@ namespace {
       DEBUG       = 3,
       FULL        = 4
     };
+    enum class Color {
+      RESET    = 0,
+      BG_RED,
+      BG_GREEN,
+      BG_YELLOW,
+      BG_BLUE,
+      BG_MAGENTA,
+      BG_GREY
+    };
 
     //! Setters
     // Keep in mind that every parameter you set will be applied only in the context of the source file you're in
@@ -105,6 +114,7 @@ namespace {
     static void moveTerminalCursorForward(int nLines_, bool clearLines_ = false );
     static void clearLine();
     static void triggerNewLine();
+    static std::string getColorEscapeCode(Logger::Color color_);
 
     //! Non-static Methods
     // For printf-style calls
@@ -112,7 +122,9 @@ namespace {
     // For std::cout-style calls
     template<typename T> Logger &operator<<(const T &data);
     Logger &operator<<(std::ostream &(*f)(std::ostream &));
+    Logger &operator<<(Logger& l_);
     Logger &operator()(bool condition_);
+    Logger &operator()(Logger::Color printColor_);
 
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
@@ -153,6 +165,7 @@ namespace {
 
     // internal
     static LogLevel _currentLogLevel_;
+    static Color _currentColor_;
     static std::string _currentFileName_;
     static int _currentLineNumber_;
     static std::string _currentPrefix_;

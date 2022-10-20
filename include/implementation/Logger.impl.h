@@ -129,7 +129,18 @@ namespace {
     *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[2K" << "\r";
   }
   void Logger::triggerNewLine(){
+    if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
     _isNewLine_ = true;
+  }
+  std::string Logger::getColorEscapeCode(Logger::Color color_){
+    if( color_ == Logger::Color::RESET ) return {"\x1b[0m"};
+    if( color_ == Logger::Color::BG_RED ) return {"\x1b[41m"};
+    if( color_ == Logger::Color::BG_GREEN ) return {"\x1b[42m"};
+    if( color_ == Logger::Color::BG_YELLOW ) return {"\x1b[43m"};
+    if( color_ == Logger::Color::BG_BLUE ) return {"\x1b[44m"};
+    if( color_ == Logger::Color::BG_MAGENTA ) return {"\x1b[45m"};
+    if( color_ == Logger::Color::BG_GREY ) return {"\x1b[46m"};
+    return {};
   }
 
   //! Non-static Methods
@@ -141,7 +152,7 @@ namespace {
     Logger::printFormat(fmt_str, std::forward<TT>(args)...);
     if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
       *_streamBufferSupervisorPtr_ << std::endl;
-      _isNewLine_ = true;
+      triggerNewLine();
     }
 
   }
@@ -168,12 +179,19 @@ namespace {
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
     *_streamBufferSupervisorPtr_ << f;
-    _isNewLine_ = true;
+    triggerNewLine();
 
+    return *this;
+  }
+  Logger &Logger::operator<<(Logger& l_){
     return *this;
   }
   Logger &Logger::operator()(bool condition_){
     if( not condition_ ) Logger::_currentLogLevel_ = LogLevel::INVALID;
+    return *this;
+  }
+  Logger &Logger::operator()(Logger::Color printColor_){
+    _currentColor_ = printColor_;
     return *this;
   }
 
@@ -181,7 +199,7 @@ namespace {
   Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_) {
 
     setupStreamBufferSupervisor(); // hook the stream buffer to an object we can handle
-    if (logLevel_ != _currentLogLevel_) _isNewLine_ = true; // force reprinting the prefix if the verbosity has changed
+    if (logLevel_ != _currentLogLevel_) triggerNewLine(); // force reprinting the prefix if the verbosity has changed
 
     // Lock while this object is created
     _loggerMutex_.lock();
@@ -192,6 +210,7 @@ namespace {
     _currentLineNumber_ = lineNumber_;
   }
   Logger::~Logger() {
+    _currentColor_ = Logger::Color::RESET;
     _loggerMutex_.unlock();
   }
 
@@ -301,6 +320,10 @@ namespace {
     if (not _currentPrefix_.empty()){
       _currentPrefix_ += ": ";
     }
+
+    if( _currentColor_ != Logger::Color::RESET ){
+      _currentPrefix_ += getColorEscapeCode(_currentColor_);
+    }
   }
   void Logger::formatUserHeaderStr(std::string &strBuffer_) {
     if( not _userHeaderStr_.empty() ){
@@ -370,13 +393,13 @@ namespace {
         // If the last line is empty, don't print since a \n will be added.
         // Let the parent function do it.
         if( line.empty() and &line == &slicedString.back() ){
-          if( formattedString.back() == '\n' ) _isNewLine_ = true;
+          if( formattedString.back() == '\n' ) { triggerNewLine(); }
           break;
         }
 
         if( &line != &slicedString.front() ){
           // The next printed line should contain the prefix
-          _isNewLine_ = true;
+          triggerNewLine();
         }
 
         // Recurse
@@ -395,12 +418,12 @@ namespace {
         // If the last line is empty, don't print since a \n will be added.
         // Let the parent function do it.
         if (iLine == (slicedString.size() - 1) and slicedString[iLine].empty()) {
-          if( formattedString.back() == '\r' ) _isNewLine_ = true;
+          if( formattedString.back() == '\r' ){ triggerNewLine(); }
           break;
         }
 
         // The next printed line should contain the prefix
-        _isNewLine_ = true;
+        triggerNewLine();
 
         // Recurse
         printFormat(slicedString[iLine].c_str());
@@ -418,7 +441,7 @@ namespace {
       if(  _streamBufferSupervisorPtr_->getLastChar() == '\r'
         or _streamBufferSupervisorPtr_->getLastChar() == '\n'
       ){
-        _isNewLine_ = true;
+        triggerNewLine();
       }
 
       // Start printing
@@ -478,6 +501,7 @@ namespace {
 
   std::string Logger::_currentPrefix_;
   Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
+  Logger::Color Logger::_currentColor_{Logger::Color::RESET};
   std::string Logger::_currentFileName_;
   int Logger::_currentLineNumber_{-1};
   bool Logger::_isNewLine_{true};
