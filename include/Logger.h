@@ -114,6 +114,7 @@ namespace {
     static void moveTerminalCursorForward(int nLines_, bool clearLines_ = false );
     static void clearLine();
     static void triggerNewLine();
+    static void printNewLine();
     static std::string getColorEscapeCode(Logger::Color color_);
 
     //! Non-static Methods

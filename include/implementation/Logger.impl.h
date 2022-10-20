@@ -92,8 +92,7 @@ namespace {
   // User Methods
   void Logger::quietLineJump() {
     Logger::setupStreamBufferSupervisor(); // in case it was not
-    if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
-    *_streamBufferSupervisorPtr_ << std::endl;
+    printNewLine();
   }
   void Logger::moveTerminalCursorBack(int nLines_, bool clearLines_ ){
     if( nLines_ <= 0 ) return;
@@ -130,8 +129,12 @@ namespace {
     *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[2K" << "\r";
   }
   void Logger::triggerNewLine(){
-    if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
     _isNewLine_ = true;
+  }
+  void Logger::printNewLine(){
+    if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
+    *_streamBufferSupervisorPtr_ << std::endl;
+    triggerNewLine();
   }
   std::string Logger::getColorEscapeCode(Logger::Color color_){
     if( color_ == Logger::Color::RESET ) return {"\x1b[0m"};
@@ -151,11 +154,7 @@ namespace {
     if (_currentLogLevel_ > _maxLogLevel_) return;
 
     Logger::printFormat(fmt_str, std::forward<TT>(args)...);
-    if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
-      if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
-      *_streamBufferSupervisorPtr_ << std::endl;
-      triggerNewLine();
-    }
+    if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') { printNewLine(); }
 
   }
   template<typename T> Logger &Logger::operator<<(const T &data) {
@@ -410,8 +409,7 @@ namespace {
 
         // jump now!
         if( &line != &slicedString.back() ){
-          if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
-          *_streamBufferSupervisorPtr_ << std::endl;
+          printNewLine();
         }
         else {} // let the last line jump be handled by the user
       } // for each line
