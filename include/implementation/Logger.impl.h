@@ -92,6 +92,7 @@ namespace {
   // User Methods
   void Logger::quietLineJump() {
     Logger::setupStreamBufferSupervisor(); // in case it was not
+    if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
     *_streamBufferSupervisorPtr_ << std::endl;
   }
   void Logger::moveTerminalCursorBack(int nLines_, bool clearLines_ ){
@@ -151,6 +152,7 @@ namespace {
 
     Logger::printFormat(fmt_str, std::forward<TT>(args)...);
     if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') {
+      if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
       *_streamBufferSupervisorPtr_ << std::endl;
       triggerNewLine();
     }
@@ -178,6 +180,7 @@ namespace {
     // Handling std::endl
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
+    if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
     *_streamBufferSupervisorPtr_ << f;
     triggerNewLine();
 
@@ -406,7 +409,10 @@ namespace {
         printFormat(line.c_str());
 
         // jump now!
-        if( &line != &slicedString.back() ){ *_streamBufferSupervisorPtr_ << std::endl; }
+        if( &line != &slicedString.back() ){
+          if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
+          *_streamBufferSupervisorPtr_ << std::endl;
+        }
         else {} // let the last line jump be handled by the user
       } // for each line
     } // If multiline
