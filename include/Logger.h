@@ -176,6 +176,15 @@ namespace {
     static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
     static std::string _outputFileName_;
 
+  public:
+    class Indent{
+    public:
+      Indent(){ Logger::setIndentStr(Logger::getIndentStr() + "  "); }
+      ~Indent(){
+        Logger::setIndentStr(Logger::getIndentStr().substring(0, Logger::getIndentStr().size()-2));
+      }
+    };
+
   };
 
 }
