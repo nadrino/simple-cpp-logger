@@ -154,7 +154,6 @@ namespace {
 
 
 #if __cplusplus >= 201703L
-
     // C++17 code
 
     // parameters
