@@ -185,6 +185,7 @@ namespace {
 
   };
 
+
   // Out of line declaration of non-const static variable (before C++17 -> now "inline" member work)
   // Need to declare all variables to avoid warning "has internal linkage but is not defined"
   // Not in Logger.impl.h file since ROOT LinkDef has a shallow scan
