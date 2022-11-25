@@ -153,7 +153,7 @@ namespace {
   private:
 
 
-#if __cplusplus >= 201703L || defined(__CINT__)
+#if __cplusplus >= 201703L
     // C++17 code
 
     // parameters
