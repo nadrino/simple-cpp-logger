@@ -153,16 +153,16 @@ namespace {
   private:
 
     // parameters
-    static inline bool _enableColors_{LOGGER_ENABLE_COLORS};
-    static inline bool _disablePrintfLineJump_{false};
-    static inline bool _propagateColorsOnUserHeader_{LOGGER_ENABLE_COLORS_ON_USER_HEADER};
-    static inline bool _cleanLineBeforePrint_{LOGGER_WRITE_OUTFILE};
-    static inline bool _writeInOutputFile_{false};
-    static inline LogLevel _maxLogLevel_{static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED)};
-    static inline PrefixLevel _prefixLevel_{static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL)};
-    static inline std::string _userHeaderStr_{};
-    static inline std::string _prefixFormat_{};
-    static inline std::string _indentStr_{};
+    static bool _enableColors_;
+    static bool _disablePrintfLineJump_;
+    static bool _propagateColorsOnUserHeader_;
+    static bool _cleanLineBeforePrint_;
+    static bool _writeInOutputFile_;
+    static LogLevel _maxLogLevel_;
+    static PrefixLevel _prefixLevel_;
+    static std::string _userHeaderStr_;
+    static std::string _prefixFormat_;
+    static std::string _indentStr_;
 
     // internal
     static bool _isNewLine_;
@@ -180,9 +180,7 @@ namespace {
     class Indent{
     public:
       inline Indent(){ Logger::setIndentStr(Logger::getIndentStr() + "  "); }
-      inline ~Indent(){
-        Logger::setIndentStr(Logger::getIndentStr().substr(0, Logger::getIndentStr().size()-2));
-      }
+      inline ~Indent(){ Logger::setIndentStr(Logger::getIndentStr().substr(0, Logger::getIndentStr().size()-2)); }
     };
 
   };
@@ -190,6 +188,20 @@ namespace {
   // Out of line declaration of non-const static variable (before C++17 -> now "inline" member work)
   // Need to declare all variables to avoid warning "has internal linkage but is not defined"
   // Not in Logger.impl.h file since ROOT LinkDef has a shallow scan
+
+  // parameters
+  bool Logger::_enableColors_{LOGGER_ENABLE_COLORS};
+  bool Logger::_propagateColorsOnUserHeader_{LOGGER_ENABLE_COLORS_ON_USER_HEADER};
+  bool Logger::_cleanLineBeforePrint_{LOGGER_WRITE_OUTFILE};
+  bool Logger::_disablePrintfLineJump_{false};
+  bool Logger::_writeInOutputFile_{false};
+  Logger::LogLevel Logger::_maxLogLevel_{static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED)};
+  Logger::PrefixLevel Logger::_prefixLevel_{static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL)};
+  std::string Logger::_userHeaderStr_{};
+  std::string Logger::_prefixFormat_{};
+  std::string Logger::_indentStr_{};
+
+  // internal
   bool Logger::_isNewLine_{true};
   int Logger::_currentLineNumber_{-1};
   std::string Logger::_currentFileName_{};
