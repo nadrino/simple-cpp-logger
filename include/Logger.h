@@ -165,16 +165,16 @@ namespace {
     static inline std::string _indentStr_{};
 
     // internal
-    static inline LogLevel _currentLogLevel_{Logger::LogLevel::TRACE};
-    static inline Color _currentColor_{Logger::Color::RESET};
-    static inline std::string _currentFileName_{};
-    static inline int _currentLineNumber_{-1};
-    static inline std::string _currentPrefix_{};
-    static inline bool _isNewLine_{true};
-    static inline std::mutex _loggerMutex_{};
-    static inline LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_{nullptr};
-    static inline LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
-    static inline std::string _outputFileName_{};
+    static bool _isNewLine_;
+    static int _currentLineNumber_;
+    static std::string _currentFileName_;
+    static std::string _currentPrefix_;
+    static std::string _outputFileName_;
+    static std::mutex _loggerMutex_;
+    static LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_;
+    static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
+    static LogLevel _currentLogLevel_;
+    static Color _currentColor_;
 
   public:
     class Indent{
@@ -186,6 +186,20 @@ namespace {
     };
 
   };
+
+  // Out of line declaration of non-const static variable (before C++17 -> now "inline" member work)
+  // Need to declare all variables to avoid warning "has internal linkage but is not defined"
+  // Not in Logger.impl.h file since ROOT LinkDef has a shallow scan
+  bool Logger::_isNewLine_{true};
+  int Logger::_currentLineNumber_{-1};
+  std::string Logger::_currentFileName_{};
+  std::string Logger::_currentPrefix_{};
+  std::string Logger::_outputFileName_{};
+  std::mutex Logger::_loggerMutex_{};
+  LoggerUtils::StreamBufferSupervisor* Logger::_streamBufferSupervisorPtr_{nullptr};
+  LoggerUtils::StreamBufferSupervisor Logger::_streamBufferSupervisor_{};
+  Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
+  Logger::Color Logger::_currentColor_{Logger::Color::RESET};
 
 }
 
