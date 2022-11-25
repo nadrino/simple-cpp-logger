@@ -2,12 +2,17 @@
 // Created by Nadrino on 24/08/2020.
 //
 
-#ifndef SIMPLE_CPP_LOGGER_LOGGER_H
-#define SIMPLE_CPP_LOGGER_LOGGER_H
+//#ifndef SIMPLE_CPP_LOGGER_LOGGER_H
+//#define SIMPLE_CPP_LOGGER_LOGGER_H
+
+#pragma once
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-label"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wunused-macros"
 
 #include "implementation/LoggerParameters.h"
 #include "implementation/LoggerUtils.h"
@@ -152,7 +157,6 @@ namespace {
 
   private:
 
-
 #if __cplusplus >= 201703L
     // C++17 code
 
@@ -249,4 +253,4 @@ namespace {
 
 #include "implementation/Logger.impl.h"
 
-#endif //SIMPLE_CPP_LOGGER_LOGGER_H
+//#endif //SIMPLE_CPP_LOGGER_LOGGER_H

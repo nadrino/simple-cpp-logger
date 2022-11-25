@@ -2,9 +2,10 @@
 // Created by Nadrino on 24/08/2020.
 //
 
-#ifndef SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
-#define SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
+//#ifndef SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
+//#define SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
 
+#pragma once
 
 #include "LoggerParameters.h"
 
@@ -524,4 +525,4 @@ namespace {
     return nullptr; \
   }()
 
-#endif //SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
+//#endif //SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
