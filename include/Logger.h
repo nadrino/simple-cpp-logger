@@ -152,6 +152,35 @@ namespace {
 
   private:
 
+
+#if __cplusplus >= 201703L
+
+    // C++17 code
+
+    // parameters
+    static inline bool _enableColors_{LOGGER_ENABLE_COLORS};
+    static inline bool _disablePrintfLineJump_{false};
+    static inline bool _propagateColorsOnUserHeader_{LOGGER_ENABLE_COLORS_ON_USER_HEADER};
+    static inline bool _cleanLineBeforePrint_{LOGGER_WRITE_OUTFILE};
+    static inline bool _writeInOutputFile_{false};
+    static inline LogLevel _maxLogLevel_{static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED)};
+    static inline PrefixLevel _prefixLevel_{static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL)};
+    static inline std::string _userHeaderStr_{};
+    static inline std::string _prefixFormat_{};
+    static inline std::string _indentStr_{};
+
+    // internal
+    static inline LogLevel _currentLogLevel_{Logger::LogLevel::TRACE};
+    static inline Color _currentColor_{Logger::Color::RESET};
+    static inline std::string _currentFileName_{};
+    static inline int _currentLineNumber_{-1};
+    static inline std::string _currentPrefix_{};
+    static inline bool _isNewLine_{true};
+    static inline std::mutex _loggerMutex_{};
+    static inline LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_{nullptr};
+    static inline LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
+    static inline std::string _outputFileName_{};
+#else
     // parameters
     static bool _enableColors_;
     static bool _disablePrintfLineJump_;
@@ -175,6 +204,7 @@ namespace {
     static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
     static LogLevel _currentLogLevel_;
     static Color _currentColor_;
+#endif
 
   public:
     class Indent{
@@ -186,9 +216,10 @@ namespace {
   };
 
 
+#if __cplusplus >= 201703L
+#else
   // Out of line declaration of non-const static variable (before C++17 -> now "inline" member work)
-  // Need to declare all variables to avoid warning "has internal linkage but is not defined"
-  // Not in Logger.impl.h file since ROOT LinkDef has a shallow scan
+  // Need to declare even default init variables to avoid warning "has internal linkage but is not defined"
 
   // parameters
   bool Logger::_enableColors_{LOGGER_ENABLE_COLORS};
@@ -213,6 +244,7 @@ namespace {
   LoggerUtils::StreamBufferSupervisor Logger::_streamBufferSupervisor_{};
   Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
   Logger::Color Logger::_currentColor_{Logger::Color::RESET};
+#endif
 
 }
 
