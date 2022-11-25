@@ -515,10 +515,10 @@ namespace {
 }
 
 #define LoggerInitializerImpl( lambdaInit ) \
-  static inline void* LoggerInitPlaceHolder = []{ \
+  static void* LoggerInitPlaceHolder = []{ \
     try{ lambdaInit(); }         \
     catch( ... ){                  \
-      LogFatal << "Error occurred during LoggerInit within the lamda instruction. Please check." << std::endl; \
+      std::cout << "Error occurred during LoggerInit within the lamda instruction. Please check." << std::endl; \
       throw std::runtime_error("Error occurred during LoggerInit"); \
     } \
     return nullptr; \
