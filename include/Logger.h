@@ -88,99 +88,99 @@ namespace {
     //! Setters
     // Keep in mind that every parameter you set will be applied only in the context of the source file you're in
     // It is an inherent feature as a **header-only** library
-    static void setMaxLogLevel(const Logger& logger_);  // Example: Logger::setMaxLogLevel(LogDebug);
-    static void setMaxLogLevel();                       // Example: LogDebug.setMaxLogLevel();
-    static void setEnableColors(bool enableColors_);
-    static void setCleanLineBeforePrint(bool cleanLineBeforePrint);
-    static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
-    static void setPrefixLevel(const PrefixLevel &prefixLevel_);
-    static void setUserHeaderStr(const std::string &userHeaderStr_);
-    static void setPrefixFormat(const std::string &prefixFormat_);
-    static void setIndentStr(const std::string &indentStr_);
+    static inline void setMaxLogLevel(const Logger& logger_);  // Example: Logger::setMaxLogLevel(LogDebug);
+    static inline void setMaxLogLevel();                       // Example: LogDebug.setMaxLogLevel();
+    static inline void setEnableColors(bool enableColors_);
+    static inline void setCleanLineBeforePrint(bool cleanLineBeforePrint);
+    static inline void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
+    static inline void setPrefixLevel(const PrefixLevel &prefixLevel_);
+    static inline void setUserHeaderStr(const std::string &userHeaderStr_);
+    static inline void setPrefixFormat(const std::string &prefixFormat_);
+    static inline void setIndentStr(const std::string &indentStr_);
 
     //! Getters
-    static bool isCleanLineBeforePrint();
+    static inline bool isCleanLineBeforePrint();
 
-    static int getMaxLogLevelInt();
-    static const LogLevel & getMaxLogLevel();
-    static std::string getPrefixString();                                // LogWarning.getPrefixString()
-    static std::string getPrefixString(const Logger& loggerConstructor); // Logger::getPrefixString(LogWarning)
-    static LoggerUtils::StreamBufferSupervisor *getStreamBufferSupervisorPtr();
-    static const std::string& getIndentStr();
+    static inline int getMaxLogLevelInt();
+    static inline const LogLevel & getMaxLogLevel();
+    static inline std::string getPrefixString();                                // LogWarning.getPrefixString()
+    static inline std::string getPrefixString(const Logger& loggerConstructor); // Logger::getPrefixString(LogWarning)
+    static inline LoggerUtils::StreamBufferSupervisor *getStreamBufferSupervisorPtr();
+    static inline const std::string& getIndentStr();
 
     //! Misc
-    static void quietLineJump();
-    static void moveTerminalCursorBack(int nLines_, bool clearLines_ = false );
-    static void moveTerminalCursorForward(int nLines_, bool clearLines_ = false );
-    static void clearLine();
-    static void triggerNewLine();
-    static void printNewLine();
-    static std::string getColorEscapeCode(Logger::Color color_);
+    static inline void quietLineJump();
+    static inline void moveTerminalCursorBack(int nLines_, bool clearLines_ = false );
+    static inline void moveTerminalCursorForward(int nLines_, bool clearLines_ = false );
+    static inline void clearLine();
+    static inline void triggerNewLine();
+    static inline void printNewLine();
+    static inline std::string getColorEscapeCode(Logger::Color color_);
 
     //! Non-static Methods
     // For printf-style calls
-    template <typename... TT> void operator()(const char *fmt_str, TT && ... args);
+    template <typename... TT> inline void operator()(const char *fmt_str, TT && ... args);
     // For std::cout-style calls
-    template<typename T> Logger &operator<<(const T &data);
-    Logger &operator<<(std::ostream &(*f)(std::ostream &));
-    Logger &operator<<(Logger& l_);
-    Logger &operator()(bool condition_);
-    Logger &operator()(Logger::Color printColor_);
+    template<typename T> inline Logger &operator<<(const T &data);
+    inline Logger &operator<<(std::ostream &(*f)(std::ostream &));
+    inline Logger &operator<<(Logger& l_);
+    inline Logger &operator()(bool condition_);
+    inline Logger &operator()(Logger::Color printColor_);
 
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
-    Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_);
-    virtual ~Logger();
+    inline Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_);
+    virtual inline ~Logger();
 
-    static void throwError(const std::string& errorStr_ = "");
+    static inline void throwError(const std::string& errorStr_ = "");
 
     // Deprecated (left here for compatibility)
-    static void setMaxLogLevel(int maxLogLevel_);
-    static void setMaxLogLevel(const LogLevel &maxLogLevel_);
+    static inline void setMaxLogLevel(int maxLogLevel_);
+    static inline void setMaxLogLevel(const LogLevel &maxLogLevel_);
 
   protected:
 
-    static void buildCurrentPrefix();
-    static void formatUserHeaderStr(std::string &strBuffer_);
-    static std::string getLogLevelColorStr(const LogLevel &selectedLogLevel_);
-    static std::string getLogLevelStr(const LogLevel &selectedLogLevel_);
-    template<typename ... Args> static void printFormat(const char *fmt_str, Args ... args );
+    static inline void buildCurrentPrefix();
+    static inline void formatUserHeaderStr(std::string &strBuffer_);
+    static inline std::string getLogLevelColorStr(const LogLevel &selectedLogLevel_);
+    static inline std::string getLogLevelStr(const LogLevel &selectedLogLevel_);
+    template<typename ... Args> static inline void printFormat(const char *fmt_str, Args ... args );
 
     // Setup Methods
-    static void setupStreamBufferSupervisor();
-    static void setupOutputFile();
+    static inline void setupStreamBufferSupervisor();
+    static inline void setupOutputFile();
 
   private:
 
     // parameters
-    static bool _enableColors_;
-    static bool _disablePrintfLineJump_;
-    static bool _propagateColorsOnUserHeader_;
-    static bool _cleanLineBeforePrint_;
-    static bool _writeInOutputFile_;
-    static LogLevel _maxLogLevel_;
-    static PrefixLevel _prefixLevel_;
-    static std::string _userHeaderStr_;
-    static std::string _prefixFormat_;
-    static std::string _indentStr_;
+    static inline bool _enableColors_{LOGGER_ENABLE_COLORS};
+    static inline bool _disablePrintfLineJump_{false};
+    static inline bool _propagateColorsOnUserHeader_{LOGGER_ENABLE_COLORS_ON_USER_HEADER};
+    static inline bool _cleanLineBeforePrint_{LOGGER_WRITE_OUTFILE};
+    static inline bool _writeInOutputFile_{false};
+    static inline LogLevel _maxLogLevel_{static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED)};
+    static inline PrefixLevel _prefixLevel_{static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL)};
+    static inline std::string _userHeaderStr_{};
+    static inline std::string _prefixFormat_{};
+    static inline std::string _indentStr_{};
 
     // internal
-    static LogLevel _currentLogLevel_;
-    static Color _currentColor_;
-    static std::string _currentFileName_;
-    static int _currentLineNumber_;
-    static std::string _currentPrefix_;
-    static bool _isNewLine_;
-    static std::mutex _loggerMutex_;
-    static LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_;
-    static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
-    static std::string _outputFileName_;
+    static inline LogLevel _currentLogLevel_{Logger::LogLevel::TRACE};
+    static inline Color _currentColor_{Logger::Color::RESET};
+    static inline std::string _currentFileName_{};
+    static inline int _currentLineNumber_{-1};
+    static inline std::string _currentPrefix_{};
+    static inline bool _isNewLine_{true};
+    static inline std::mutex _loggerMutex_{};
+    static inline LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_{nullptr};
+    static inline LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
+    static inline std::string _outputFileName_{};
 
   public:
     class Indent{
     public:
-      Indent(){ Logger::setIndentStr(Logger::getIndentStr() + "  "); }
-      ~Indent(){
+      inline Indent(){ Logger::setIndentStr(Logger::getIndentStr() + "  "); }
+      inline ~Indent(){
         Logger::setIndentStr(Logger::getIndentStr().substr(0, Logger::getIndentStr().size()-2));
       }
     };

@@ -31,70 +31,70 @@
 namespace {
 
   // Setters
-  void Logger::setMaxLogLevel(const Logger& logger_){
+  inline void Logger::setMaxLogLevel(const Logger& logger_){
     // _currentLogLevel_ is set by the constructor,
     // so when you provide "LogDebug" as an argument the _currentLogLevel_ is automatically updated
     // Stricto sensu: the argument is just a placeholder for silently updating _currentLogLevel_
     _maxLogLevel_ = _currentLogLevel_;
   }
-  void Logger::setMaxLogLevel(){
+  inline void Logger::setMaxLogLevel(){
     // same technique as other, but this time with no arguments
     _maxLogLevel_ = _currentLogLevel_;
   }
-  void Logger::setEnableColors(bool enableColors_) {
+  inline void Logger::setEnableColors(bool enableColors_) {
     _enableColors_ = enableColors_;
   }
-  void Logger::setCleanLineBeforePrint(bool cleanLineBeforePrint) {
+  inline void Logger::setCleanLineBeforePrint(bool cleanLineBeforePrint) {
     _cleanLineBeforePrint_ = cleanLineBeforePrint;
   }
-  void Logger::setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_) {
+  inline void Logger::setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_) {
     _propagateColorsOnUserHeader_ = propagateColorsOnUserHeader_;
   }
-  void Logger::setPrefixLevel(const PrefixLevel &prefixLevel_) {
+  inline void Logger::setPrefixLevel(const PrefixLevel &prefixLevel_) {
     _prefixLevel_ = prefixLevel_;
   }
-  void Logger::setUserHeaderStr(const std::string &userHeaderStr_) {
+  inline void Logger::setUserHeaderStr(const std::string &userHeaderStr_) {
     _userHeaderStr_ = userHeaderStr_;
   }
-  void Logger::setPrefixFormat(const std::string &prefixFormat_) {
+  inline void Logger::setPrefixFormat(const std::string &prefixFormat_) {
     _prefixFormat_ = prefixFormat_;
   }
-  void Logger::setIndentStr(const std::string &indentStr_){
+  inline void Logger::setIndentStr(const std::string &indentStr_){
     _indentStr_ = indentStr_;
   }
 
   // Getters
-  bool Logger::isCleanLineBeforePrint() {
+  inline bool Logger::isCleanLineBeforePrint() {
     return _cleanLineBeforePrint_;
   }
-  int Logger::getMaxLogLevelInt() {
+  inline int Logger::getMaxLogLevelInt() {
     return static_cast<int>(_maxLogLevel_);
   }
-  const Logger::LogLevel & Logger::getMaxLogLevel() {
+  inline const Logger::LogLevel & Logger::getMaxLogLevel() {
     return _maxLogLevel_;
   }
-  std::string Logger::getPrefixString() {
+  inline std::string Logger::getPrefixString() {
     buildCurrentPrefix();
     return _currentPrefix_;
   }
-  std::string Logger::getPrefixString(const Logger& loggerConstructor){
+  inline std::string Logger::getPrefixString(const Logger& loggerConstructor){
     // Calling the constructor will automatically update the fields
     return Logger::getPrefixString();
   }
-  LoggerUtils::StreamBufferSupervisor *Logger::getStreamBufferSupervisorPtr() {
+  inline LoggerUtils::StreamBufferSupervisor *Logger::getStreamBufferSupervisorPtr() {
     return _streamBufferSupervisorPtr_;
   }
-  const std::string& Logger::getIndentStr(){
+  inline const std::string& Logger::getIndentStr(){
     return _indentStr_;
   }
 
 
   // User Methods
-  void Logger::quietLineJump() {
+  inline void Logger::quietLineJump() {
     Logger::setupStreamBufferSupervisor(); // in case it was not
     printNewLine();
   }
-  void Logger::moveTerminalCursorBack(int nLines_, bool clearLines_ ){
+  inline void Logger::moveTerminalCursorBack(int nLines_, bool clearLines_ ){
     if( nLines_ <= 0 ) return;
     Logger::setupStreamBufferSupervisor(); // in case it was not
 
@@ -109,7 +109,7 @@ namespace {
       }
     }
   }
-  void Logger::moveTerminalCursorForward(int nLines_, bool clearLines_ ){
+  inline void Logger::moveTerminalCursorForward(int nLines_, bool clearLines_ ){
     if( nLines_ <= 0 ) return;
     Logger::setupStreamBufferSupervisor(); // in case it was not
 
@@ -124,19 +124,19 @@ namespace {
       }
     }
   }
-  void Logger::clearLine(){
+  inline void Logger::clearLine(){
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[2K" << "\r";
   }
-  void Logger::triggerNewLine(){
+  inline void Logger::triggerNewLine(){
     _isNewLine_ = true;
   }
-  void Logger::printNewLine(){
+  inline void Logger::printNewLine(){
     if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
     *_streamBufferSupervisorPtr_ << std::endl;
     triggerNewLine();
   }
-  std::string Logger::getColorEscapeCode(Logger::Color color_){
+  inline std::string Logger::getColorEscapeCode(Logger::Color color_){
     if( color_ == Logger::Color::RESET ) return {"\x1b[0m"};
     if( color_ == Logger::Color::BG_RED ) return {"\x1b[41m"};
     if( color_ == Logger::Color::BG_GREEN ) return {"\x1b[42m"};
@@ -149,7 +149,7 @@ namespace {
 
   //! Non-static Methods
   // For printf-style calls
-  template<typename... TT> void Logger::operator()(const char *fmt_str, TT &&... args) {
+  template<typename... TT> inline void Logger::operator()(const char *fmt_str, TT &&... args) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return;
 
@@ -157,7 +157,7 @@ namespace {
     if (not _disablePrintfLineJump_ and fmt_str[strlen(fmt_str) - 1] != '\n') { printNewLine(); }
 
   }
-  template<typename T> Logger &Logger::operator<<(const T &data) {
+  template<typename T> inline Logger &Logger::operator<<(const T &data) {
 
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
@@ -174,7 +174,7 @@ namespace {
 
     return *this;
   }
-  Logger &Logger::operator<<(std::ostream &(*f)(std::ostream &)) {
+  inline Logger &Logger::operator<<(std::ostream &(*f)(std::ostream &)) {
 
     // Handling std::endl
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
@@ -185,20 +185,20 @@ namespace {
 
     return *this;
   }
-  Logger &Logger::operator<<(Logger& l_){
+  inline Logger &Logger::operator<<(Logger& l_){
     return *this;
   }
-  Logger &Logger::operator()(bool condition_){
+  inline Logger &Logger::operator()(bool condition_){
     if( not condition_ ) Logger::_currentLogLevel_ = LogLevel::INVALID;
     return *this;
   }
-  Logger &Logger::operator()(Logger::Color printColor_){
+  inline Logger &Logger::operator()(Logger::Color printColor_){
     _currentColor_ = printColor_;
     return *this;
   }
 
   // C-tor D-tor
-  Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_) {
+  inline Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_) {
 
     setupStreamBufferSupervisor(); // hook the stream buffer to an object we can handle
     if (logLevel_ != _currentLogLevel_) triggerNewLine(); // force reprinting the prefix if the verbosity has changed
@@ -211,27 +211,27 @@ namespace {
     _currentFileName_ = fileName_;
     _currentLineNumber_ = lineNumber_;
   }
-  Logger::~Logger() {
+  inline Logger::~Logger() {
     _currentColor_ = Logger::Color::RESET;
     _loggerMutex_.unlock();
   }
 
-  void Logger::throwError(const std::string& errorStr_) {
+  inline void Logger::throwError(const std::string& errorStr_) {
     if( errorStr_.empty() ) throw std::runtime_error("exception thrown by the logger.");
     else throw std::runtime_error("exception thrown by the logger: " + errorStr_);
   }
 
   // Deprecated (left here for compatibility)
-  void Logger::setMaxLogLevel(int maxLogLevel_) {
+  inline void Logger::setMaxLogLevel(int maxLogLevel_) {
     Logger::setMaxLogLevel(static_cast<Logger::LogLevel>(maxLogLevel_));
   }
-  void Logger::setMaxLogLevel(const LogLevel &maxLogLevel_) {
+  inline void Logger::setMaxLogLevel(const LogLevel &maxLogLevel_) {
     _maxLogLevel_ = maxLogLevel_;
   }
 
 
   // Protected Methods
-  void Logger::buildCurrentPrefix() {
+  inline void Logger::buildCurrentPrefix() {
 
     std::string strBuffer;
 
@@ -327,14 +327,14 @@ namespace {
       _currentPrefix_ += getColorEscapeCode(_currentColor_);
     }
   }
-  void Logger::formatUserHeaderStr(std::string &strBuffer_) {
+  inline void Logger::formatUserHeaderStr(std::string &strBuffer_) {
     if( not _userHeaderStr_.empty() ){
       if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += getLogLevelColorStr(_currentLogLevel_);
       strBuffer_ += _userHeaderStr_;
       if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += "\033[0m";
     }
   }
-  std::string Logger::getLogLevelColorStr(const LogLevel &selectedLogLevel_) {
+  inline std::string Logger::getLogLevelColorStr(const LogLevel &selectedLogLevel_) {
     switch (selectedLogLevel_) {
       case Logger::LogLevel::FATAL:
         return "\033[41m";
@@ -354,7 +354,7 @@ namespace {
         return "";
     }
   }
-  std::string Logger::getLogLevelStr(const LogLevel &selectedLogLevel_) {
+  inline std::string Logger::getLogLevelStr(const LogLevel &selectedLogLevel_) {
 
     switch (selectedLogLevel_) {
 
@@ -377,7 +377,7 @@ namespace {
 
     }
   }
-  template<typename ... Args> void Logger::printFormat(const char *fmt_str, Args ... args ){
+  template<typename ... Args> inline void Logger::printFormat(const char *fmt_str, Args ... args ){
 
     std::string formattedString;
 
@@ -469,13 +469,13 @@ namespace {
   }
 
   // Setup Methods
-  void Logger::setupStreamBufferSupervisor(){
+  inline void Logger::setupStreamBufferSupervisor(){
     if(_streamBufferSupervisorPtr_ != nullptr) return;
     _streamBufferSupervisorPtr_ = new LoggerUtils::StreamBufferSupervisor(); // this object can't be deleted -> that's why we can't directly override with the logger class
     Logger::setupOutputFile();
 
   }
-  void Logger::setupOutputFile(){
+  inline void Logger::setupOutputFile(){
     if( not _writeInOutputFile_ or not _outputFileName_.empty() ){
       return;
     }
@@ -492,31 +492,30 @@ namespace {
   }
 
   // Private Members
-  bool Logger::_enableColors_ = LOGGER_ENABLE_COLORS;
-  bool Logger::_propagateColorsOnUserHeader_ = LOGGER_ENABLE_COLORS_ON_USER_HEADER;
-  bool Logger::_cleanLineBeforePrint_ = LOGGER_CLEAR_LINE_BEFORE_PRINT;
-  bool Logger::_writeInOutputFile_ = LOGGER_WRITE_OUTFILE;
-  bool Logger::_disablePrintfLineJump_ = false;
-  Logger::LogLevel Logger::_maxLogLevel_(static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED));
-  Logger::PrefixLevel Logger::_prefixLevel_(static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL));
-  std::string Logger::_userHeaderStr_;
-  std::string Logger::_prefixFormat_;
-  std::string Logger::_indentStr_;
+//  bool Logger::_enableColors_ = LOGGER_ENABLE_COLORS;
+//  bool Logger::_propagateColorsOnUserHeader_ = LOGGER_ENABLE_COLORS_ON_USER_HEADER;
+//  bool Logger::_cleanLineBeforePrint_ = LOGGER_CLEAR_LINE_BEFORE_PRINT;
+//  bool Logger::_writeInOutputFile_ = LOGGER_WRITE_OUTFILE;
+//  bool Logger::_disablePrintfLineJump_ = false;
+//  Logger::LogLevel Logger::_maxLogLevel_(static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED));
+//  Logger::PrefixLevel Logger::_prefixLevel_(static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL));
+//  std::string Logger::_userHeaderStr_;
+//  std::string Logger::_prefixFormat_;
 
-  std::string Logger::_currentPrefix_;
-  Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
-  Logger::Color Logger::_currentColor_{Logger::Color::RESET};
-  std::string Logger::_currentFileName_;
-  int Logger::_currentLineNumber_{-1};
-  bool Logger::_isNewLine_{true};
-  std::mutex Logger::_loggerMutex_;
-  LoggerUtils::StreamBufferSupervisor* Logger::_streamBufferSupervisorPtr_{nullptr};
-  std::string Logger::_outputFileName_;
+//  std::string Logger::_currentPrefix_;
+//  Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
+//  Logger::Color Logger::_currentColor_{Logger::Color::RESET};
+//  std::string Logger::_currentFileName_;
+//  int Logger::_currentLineNumber_{-1};
+//  bool Logger::_isNewLine_{true};
+//  std::mutex Logger::_loggerMutex_;
+//  LoggerUtils::StreamBufferSupervisor* Logger::_streamBufferSupervisorPtr_{nullptr};
+//  std::string Logger::_outputFileName_;
 
 }
 
 #define LoggerInitializerImpl( lambdaInit ) \
-  static void* LoggerInitPlaceHolder = []{ \
+  static inline void* LoggerInitPlaceHolder = []{ \
     try{ lambdaInit(); }         \
     catch( ... ){                  \
       LogFatal << "Error occurred during LoggerInit within the lamda instruction. Please check." << std::endl; \

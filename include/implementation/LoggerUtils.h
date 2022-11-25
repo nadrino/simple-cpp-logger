@@ -19,16 +19,17 @@ namespace LoggerUtils{
     // It can't be handled by the Logger since each time a logger is called, it is deleted after the ";"
   public:
     StreamBufferSupervisor(){
-      _streamBufferPtr_ = _outputStream_.rdbuf();   // back up cout's streambuf
-      _outputStream_.flush();
+      _streamBufferPtr_ = _outputStream_->rdbuf();   // back up cout's streambuf
+      _outputStream_->flush();
       setp(nullptr, nullptr);
 //      _streamBufferSupervisorPtr_->setStreamBuffer(cbuf);
-      _outputStream_.rdbuf(this);          // reassign your streambuf to cout
+      _outputStream_->rdbuf(this);          // reassign your streambuf to cout
     }
     ~StreamBufferSupervisor() override {
       if( _outFileStream_.is_open() ){
         _outFileStream_.close();
       }
+      _outputStream_->rdbuf(_streamBufferPtr_);
     }
 
     void setStreamBuffer(std::streambuf* buf_){
@@ -47,12 +48,12 @@ namespace LoggerUtils{
       _outFileStream_.open(outFilePath_);
     }
     template<typename T> StreamBufferSupervisor& operator<<(const T& something){
-      _outputStream_ << something;
+      (*_outputStream_) << something;
       if( _outFileStream_.is_open() ) _outFileStream_ << something;
       return *this;
     }
     StreamBufferSupervisor &operator<<(std::ostream &(*f)(std::ostream &)){
-      _outputStream_ << f;
+      (*_outputStream_) << f;
       if( _outFileStream_.is_open() ) _outFileStream_ << f;
       return *this;
     }
@@ -60,7 +61,7 @@ namespace LoggerUtils{
   private:
     std::streambuf* _streamBufferPtr_{nullptr};
     std::ofstream _outFileStream_;
-    std::ostream& _outputStream_ = std::cout;
+    std::ostream* _outputStream_ = &std::cout;
     char _lastChar_{static_cast<char>(traits_type::eof())};
   };
 
