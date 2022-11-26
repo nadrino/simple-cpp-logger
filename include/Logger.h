@@ -88,34 +88,34 @@ namespace {
     //! Setters
     // Keep in mind that every parameter you set will be applied only in the context of the source file you're in
     // It is an inherent feature as a **header-only** library
-    static inline void setMaxLogLevel(const Logger& logger_);  // Example: Logger::setMaxLogLevel(LogDebug);
-    static inline void setMaxLogLevel();                       // Example: LogDebug.setMaxLogLevel();
-    static inline void setEnableColors(bool enableColors_);
-    static inline void setCleanLineBeforePrint(bool cleanLineBeforePrint);
-    static inline void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
-    static inline void setPrefixLevel(const PrefixLevel &prefixLevel_);
-    static inline void setUserHeaderStr(const std::string &userHeaderStr_);
-    static inline void setPrefixFormat(const std::string &prefixFormat_);
-    static inline void setIndentStr(const std::string &indentStr_);
+    inline static void setMaxLogLevel(const Logger& logger_);  // Example: Logger::setMaxLogLevel(LogDebug);
+    inline static void setMaxLogLevel();                       // Example: LogDebug.setMaxLogLevel();
+    inline static void setEnableColors(bool enableColors_);
+    inline static void setCleanLineBeforePrint(bool cleanLineBeforePrint);
+    inline static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
+    inline static void setPrefixLevel(const PrefixLevel &prefixLevel_);
+    inline static void setUserHeaderStr(const std::string &userHeaderStr_);
+    inline static void setPrefixFormat(const std::string &prefixFormat_);
+    inline static void setIndentStr(const std::string &indentStr_);
 
     //! Getters
-    static inline bool isCleanLineBeforePrint();
+    inline static bool isCleanLineBeforePrint();
 
-    static inline int getMaxLogLevelInt();
-    static inline const LogLevel & getMaxLogLevel();
-    static inline std::string getPrefixString();                                // LogWarning.getPrefixString()
-    static inline std::string getPrefixString(const Logger& loggerConstructor); // Logger::getPrefixString(LogWarning)
-    static inline LoggerUtils::StreamBufferSupervisor *getStreamBufferSupervisorPtr();
-    static inline const std::string& getIndentStr();
+    inline static int getMaxLogLevelInt();
+    inline static const LogLevel & getMaxLogLevel();
+    inline static std::string getPrefixString();                                // LogWarning.getPrefixString()
+    inline static std::string getPrefixString(const Logger& loggerConstructor); // Logger::getPrefixString(LogWarning)
+    inline static LoggerUtils::StreamBufferSupervisor *getStreamBufferSupervisorPtr();
+    inline static const std::string& getIndentStr();
 
     //! Misc
-    static inline void quietLineJump();
-    static inline void moveTerminalCursorBack(int nLines_, bool clearLines_ = false );
-    static inline void moveTerminalCursorForward(int nLines_, bool clearLines_ = false );
-    static inline void clearLine();
-    static inline void triggerNewLine();
-    static inline void printNewLine();
-    static inline std::string getColorEscapeCode(Logger::Color color_);
+    inline static void quietLineJump();
+    inline static void moveTerminalCursorBack(int nLines_, bool clearLines_ = false );
+    inline static void moveTerminalCursorForward(int nLines_, bool clearLines_ = false );
+    inline static void clearLine();
+    inline static void triggerNewLine();
+    inline static void printNewLine();
+    inline static std::string getColorEscapeCode(Logger::Color color_);
 
     //! Non-static Methods
     // For printf-style calls
@@ -132,26 +132,25 @@ namespace {
     inline Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_);
     virtual inline ~Logger();
 
-    static inline void throwError(const std::string& errorStr_ = "");
+    inline static void throwError(const std::string& errorStr_ = "");
 
     // Deprecated (left here for compatibility)
-    static inline void setMaxLogLevel(int maxLogLevel_);
-    static inline void setMaxLogLevel(const LogLevel &maxLogLevel_);
+    inline static void setMaxLogLevel(int maxLogLevel_);
+    inline static void setMaxLogLevel(const LogLevel &maxLogLevel_);
 
   protected:
 
-    static inline void buildCurrentPrefix();
-    static inline void formatUserHeaderStr(std::string &strBuffer_);
-    static inline std::string getLogLevelColorStr(const LogLevel &selectedLogLevel_);
-    static inline std::string getLogLevelStr(const LogLevel &selectedLogLevel_);
-    template<typename ... Args> static inline void printFormat(const char *fmt_str, Args ... args );
+    inline static void buildCurrentPrefix();
+    inline static void formatUserHeaderStr(std::string &strBuffer_);
+    inline static std::string getLogLevelColorStr(const LogLevel &selectedLogLevel_);
+    inline static std::string getLogLevelStr(const LogLevel &selectedLogLevel_);
+    template<typename ... Args> inline static void printFormat(const char *fmt_str, Args ... args );
 
     // Setup Methods
-    static inline void setupStreamBufferSupervisor();
-    static inline void setupOutputFile();
+    inline static void setupStreamBufferSupervisor();
+    inline static void setupOutputFile();
 
   private:
-
 
 #if __cplusplus >= 201703L
     // C++17 code
