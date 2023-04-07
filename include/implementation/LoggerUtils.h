@@ -11,6 +11,19 @@
 #include "vector"
 #include "string"
 
+
+#ifndef HAS_CPP_17
+#define HAS_CPP_17 (__cplusplus >= 201703L)
+#endif // HAS_CPP_17
+
+#ifndef HAS_CPP_14
+#define HAS_CPP_14 (__cplusplus >= 201300L)
+#endif // HAS_CPP_14
+
+#ifndef HAS_CPP_11
+#define HAS_CPP_11 (__cplusplus >= 201103L)
+#endif // HAS_CPP_11
+
 // Header
 namespace LoggerUtils{
 

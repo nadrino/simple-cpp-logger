@@ -15,6 +15,7 @@
 #include <string>
 #include <mutex>
 #include <vector>
+#include <unordered_set>
 
 
 #define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
@@ -28,6 +29,15 @@
 #define LogInfo        (Logger{Logger::LogLevel::INFO,     FILENAME, __LINE__})
 #define LogDebug       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__})
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__})
+
+// dev
+#define LogFatalOnce       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__, true})
+#define LogErrorOnce       (Logger{Logger::LogLevel::ERROR,    FILENAME, __LINE__, true})
+#define LogAlertOnce       (Logger{Logger::LogLevel::ALERT,    FILENAME, __LINE__, true})
+#define LogWarningOnce     (Logger{Logger::LogLevel::WARNING,  FILENAME, __LINE__, true})
+#define LogInfoOnce        (Logger{Logger::LogLevel::INFO,     FILENAME, __LINE__, true})
+#define LogDebugOnce       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__, true})
+#define LogTraceOnce       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__, true})
 
 // To make assertions
 #define LogThrowIf2(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
@@ -129,7 +139,7 @@ namespace {
 
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
-    inline Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_);
+    inline Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_, bool once_=false);
     virtual inline ~Logger();
 
     inline static void throwError(const std::string& errorStr_ = "");
@@ -152,7 +162,7 @@ namespace {
 
   private:
 
-#if __cplusplus >= 201703L
+#if HAS_CPP_17
     // C++17 code
 
     // parameters
@@ -168,16 +178,20 @@ namespace {
     static inline std::string _indentStr_{};
 
     // internal
-    static inline LogLevel _currentLogLevel_{Logger::LogLevel::TRACE};
-    static inline Color _currentColor_{Logger::Color::RESET};
-    static inline std::string _currentFileName_{};
-    static inline int _currentLineNumber_{-1};
-    static inline std::string _currentPrefix_{};
     static inline bool _isNewLine_{true};
+    static inline int _currentLineNumber_{-1};
+    static inline std::string _currentFileName_{};
+    static inline std::string _currentPrefix_{};
+    static inline std::string _outputFileName_{};
     static inline std::mutex _loggerMutex_{};
+    static inline std::unordered_set<void*> _onceLogList_{};
+    static inline Color _currentColor_{Logger::Color::RESET};
+    static inline LogLevel _currentLogLevel_{Logger::LogLevel::TRACE};
     static inline LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_{nullptr};
     static inline LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
-    static inline std::string _outputFileName_{};
+
+    // non-static
+    std::scoped_lock<std::mutex> _lock_{_loggerMutex_};
 #else
     // parameters
     static bool _enableColors_;
@@ -202,6 +216,10 @@ namespace {
     static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
     static LogLevel _currentLogLevel_;
     static Color _currentColor_;
+    static std::unordered_set<void*> _onceLogList_{};
+
+    // non-static
+    std::lock_guard<std::mutex> _lock_{_loggerMutex_};
 #endif
 
   public:
@@ -214,7 +232,7 @@ namespace {
   };
 
 
-#if __cplusplus >= 201703L
+#if HAS_CPP_17
 #else
   // Out of line declaration of non-const static variable (before C++17 -> now "inline" member work)
   // Need to declare even default init variables to avoid warning "has internal linkage but is not defined"

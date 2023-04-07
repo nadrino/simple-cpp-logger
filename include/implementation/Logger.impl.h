@@ -168,7 +168,6 @@ namespace {
     if( dataStream.str().empty() ) return *this; // Don't even print the header
 
     {
-//      std::lock_guard<std::mutex> guard(_loggerMutex_);
       /* do whatever necessary with the shared data */
       printFormat(dataStream.str().c_str());
     }
@@ -199,22 +198,30 @@ namespace {
   }
 
   // C-tor D-tor
-  inline Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_) {
+  inline Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_, bool once_) {
 
     setupStreamBufferSupervisor(); // hook the stream buffer to an object we can handle
     if (logLevel_ != _currentLogLevel_) triggerNewLine(); // force reprinting the prefix if the verbosity has changed
-
-    // Lock while this object is created
-    _loggerMutex_.lock();
 
     // static members
     _currentLogLevel_ = logLevel_;
     _currentFileName_ = fileName_;
     _currentLineNumber_ = lineNumber_;
+
+    if( once_ ){
+      if( _onceLogList_.find( reinterpret_cast<int *>( (int*) fileName_ - (int*) &lineNumber_ ) ) != _onceLogList_.end() ){
+        // mute
+        Logger::_currentLogLevel_ = LogLevel::INVALID;
+      }
+      else{
+        // will be printed only this time:
+        // dirty trick (better way??): get unique identifier out of file name and lineNumber.
+        _onceLogList_.insert(reinterpret_cast<int *>( (int*) fileName_ - (int*) &lineNumber_ ) );
+      }
+    }
   }
   inline Logger::~Logger() {
     _currentColor_ = Logger::Color::RESET;
-    _loggerMutex_.unlock();
   }
 
   inline void Logger::throwError(const std::string& errorStr_) {
