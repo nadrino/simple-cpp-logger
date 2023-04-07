@@ -209,14 +209,16 @@ namespace {
     _currentLineNumber_ = lineNumber_;
 
     if( once_ ){
-      if( _onceLogList_.find( reinterpret_cast<int *>( (int*) fileName_ - (int*) &lineNumber_ ) ) != _onceLogList_.end() ){
+      size_t instanceHash{(size_t) lineNumber_};
+      LoggerUtils::hashCombine(instanceHash, fileName_);
+      if( _onceLogList_.find( instanceHash ) != _onceLogList_.end() ){
         // mute
         Logger::_currentLogLevel_ = LogLevel::INVALID;
       }
       else{
         // will be printed only this time:
         // dirty trick (better way??): get unique identifier out of file name and lineNumber.
-        _onceLogList_.insert(reinterpret_cast<int *>( (int*) fileName_ - (int*) &lineNumber_ ) );
+        _onceLogList_.insert( instanceHash );
       }
     }
   }

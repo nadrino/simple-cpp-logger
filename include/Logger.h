@@ -184,14 +184,14 @@ namespace {
     static inline std::string _currentPrefix_{};
     static inline std::string _outputFileName_{};
     static inline std::mutex _loggerMutex_{};
-    static inline std::unordered_set<void*> _onceLogList_{};
+    static inline std::unordered_set<size_t> _onceLogList_{};
     static inline Color _currentColor_{Logger::Color::RESET};
     static inline LogLevel _currentLogLevel_{Logger::LogLevel::TRACE};
     static inline LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_{nullptr};
     static inline LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
 
     // non-static
-    std::scoped_lock<std::mutex> _lock_{_loggerMutex_};
+    std::scoped_lock<std::mutex> _lock_{_loggerMutex_}; // one logger can be created at a given time
 #else
     // parameters
     static bool _enableColors_;

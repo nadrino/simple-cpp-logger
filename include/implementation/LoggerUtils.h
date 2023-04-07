@@ -10,6 +10,7 @@
 #include "thread"
 #include "vector"
 #include "string"
+#include "functional"
 
 
 #ifndef HAS_CPP_17
@@ -94,6 +95,12 @@ namespace LoggerUtils{
   // Hardware Utils
   inline int getTerminalWidth();
   inline std::string getExecutableName();
+
+  // hash Utils
+  template <class T> inline void hashCombine(std::size_t& seed, const T& v) {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+  }
 
 }
 
