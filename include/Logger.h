@@ -216,7 +216,7 @@ namespace {
     static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
     static LogLevel _currentLogLevel_;
     static Color _currentColor_;
-    static std::unordered_set<void*> _onceLogList_{};
+    static std::unordered_set<size_t> _onceLogList_;
 
     // non-static
     std::lock_guard<std::mutex> _lock_{_loggerMutex_};
@@ -260,6 +260,7 @@ namespace {
   LoggerUtils::StreamBufferSupervisor Logger::_streamBufferSupervisor_{};
   Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
   Logger::Color Logger::_currentColor_{Logger::Color::RESET};
+  std::unordered_set<size_t> Logger::_onceLogList_{};
 #endif
 
 }
