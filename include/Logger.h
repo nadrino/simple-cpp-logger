@@ -39,6 +39,8 @@
 #define LogDebugOnce       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__, true})
 #define LogTraceOnce       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__, true})
 
+#define LogScopeIndent Logger::ScopedIndent MAKE_VARNAME_LINE(scopeIndentTempObj);
+
 // To make assertions
 #define LogThrowIf2(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
 #define LogThrowIf1(isThrowing_) LogThrowIf2(isThrowing_, #isThrowing_)
@@ -223,10 +225,9 @@ namespace {
 #endif
 
   public:
-    class Indent{
-    public:
-      inline Indent(){ Logger::setIndentStr(Logger::getIndentStr() + "  "); }
-      inline ~Indent(){ Logger::setIndentStr(Logger::getIndentStr().substr(0, Logger::getIndentStr().size()-2)); }
+    struct ScopedIndent{
+      inline ScopedIndent(){ Logger::setIndentStr(Logger::getIndentStr() + "  "); }
+      inline ~ScopedIndent(){ Logger::setIndentStr(Logger::getIndentStr().substr(0, Logger::getIndentStr().size()-2)); }
     };
 
   };

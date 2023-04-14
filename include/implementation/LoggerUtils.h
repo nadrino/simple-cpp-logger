@@ -25,6 +25,11 @@
 #define HAS_CPP_11 (__cplusplus >= 201103L)
 #endif // HAS_CPP_11
 
+
+#define CAT_(a, b) a ## b
+#define CAT(a, b) CAT_(a, b)
+#define MAKE_VARNAME_LINE(Var) CAT(Var, __LINE__)
+
 // Header
 namespace LoggerUtils{
 
