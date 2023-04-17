@@ -18,9 +18,6 @@
 #include <unordered_set>
 
 
-#define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
-#define GET_OVERLOADED_MACRO3(_1,_2,_3,NAME,...) NAME
-
 // Here is what you want to use
 #define LogFatal       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__})
 #define LogError       (Logger{Logger::LogLevel::ERROR,    FILENAME, __LINE__})
@@ -30,7 +27,16 @@
 #define LogDebug       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__})
 #define LogTrace       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__})
 
-// dev
+// conditional
+#define LogFatalIf(isPrint_)     (isPrint_ ? LogFatal   : LogInvalid)
+#define LogErrorIf(isPrint_)     (isPrint_ ? LogError   : LogInvalid)
+#define LogAlertIf(isPrint_)     (isPrint_ ? LogAlert   : LogInvalid)
+#define LogWarningIf(isPrint_)   (isPrint_ ? LogWarning : LogInvalid)
+#define LogInfoIf(isPrint_)      (isPrint_ ? LogInfo    : LogInvalid)
+#define LogDebugIf(isPrint_)     (isPrint_ ? LogDebug   : LogInvalid)
+#define LogTraceIf(isPrint_)     (isPrint_ ? LogTrace   : LogInvalid)
+
+// once
 #define LogFatalOnce       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__, true})
 #define LogErrorOnce       (Logger{Logger::LogLevel::ERROR,    FILENAME, __LINE__, true})
 #define LogAlertOnce       (Logger{Logger::LogLevel::ALERT,    FILENAME, __LINE__, true})
@@ -38,8 +44,6 @@
 #define LogInfoOnce        (Logger{Logger::LogLevel::INFO,     FILENAME, __LINE__, true})
 #define LogDebugOnce       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__, true})
 #define LogTraceOnce       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__, true})
-
-#define LogScopeIndent Logger::ScopedIndent MAKE_VARNAME_LINE(scopeIndentTempObj);
 
 // To make assertions
 #define LogThrowIf2(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
@@ -58,6 +62,8 @@
 #define LogReturnIf2(isReturn_, returnMessage_)  LogReturnIf3(isReturn_, returnMessage_, )
 #define LogReturnIf1(isReturn_)  LogReturnIf2(isReturn_, (#isReturn_))
 #define LogReturnIf(...) GET_OVERLOADED_MACRO3(__VA_ARGS__, LogReturnIf3, LogReturnIf2, LogReturnIf1)(__VA_ARGS__)
+
+#define LogScopeIndent Logger::ScopedIndent MAKE_VARNAME_LINE(scopeIndentTempObj);
 
 // To setup the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )

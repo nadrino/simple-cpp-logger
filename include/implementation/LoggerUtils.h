@@ -30,6 +30,11 @@
 #define CAT(a, b) CAT_(a, b)
 #define MAKE_VARNAME_LINE(Var) CAT(Var, __LINE__)
 
+#define LogInvalid     (Logger{Logger::LogLevel::INVALID,  FILENAME, __LINE__})
+
+#define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
+#define GET_OVERLOADED_MACRO3(_1,_2,_3,NAME,...) NAME
+
 // Header
 namespace LoggerUtils{
 
