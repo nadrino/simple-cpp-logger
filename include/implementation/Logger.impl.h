@@ -29,6 +29,17 @@
 #include <iostream>
 
 
+#define LoggerInitializerImpl( lambdaInit ) \
+  static void* MAKE_VARNAME_LINE(LoggerInitPlaceHolder) = []{ \
+    try{ lambdaInit(); }         \
+    catch( ... ){                  \
+      std::cout << "Error occurred during LoggerInit within the lamda instruction. Please check." << std::endl; \
+      throw std::runtime_error("Error occurred during LoggerInit"); \
+    } \
+    return nullptr; \
+  }()
+
+
 namespace {
 
   // Setters
@@ -55,13 +66,16 @@ namespace {
     _prefixLevel_ = prefixLevel_;
   }
   inline void Logger::setUserHeaderStr(const std::string &userHeaderStr_) {
-    _userHeaderStr_ = userHeaderStr_;
+    _userHeaderStr_.str(userHeaderStr_);
   }
   inline void Logger::setPrefixFormat(const std::string &prefixFormat_) {
     _prefixFormat_ = prefixFormat_;
   }
   inline void Logger::setIndentStr(const std::string &indentStr_){
     _indentStr_ = indentStr_;
+  }
+  inline std::stringstream& Logger::getUserHeader(){
+    return _userHeaderStr_;
   }
 
   // Getters
@@ -250,7 +264,7 @@ namespace {
 
     // Nothing else -> NONE level
     if( Logger::_prefixLevel_ == Logger::PrefixLevel::NONE ){
-      if( not _userHeaderStr_.empty() ){
+      if( not _userHeaderStr_.str().empty() ){
         Logger::formatUserHeaderStr(_currentPrefix_);
         _currentPrefix_ += " "; // extra space
       }
@@ -300,7 +314,7 @@ namespace {
     LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{THREAD}", strBuffer);
 
 
-    if( _userHeaderStr_.empty() ){
+    if( _userHeaderStr_.str().empty() ){
       LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", "");
     }
 
@@ -310,7 +324,7 @@ namespace {
     while(_currentPrefix_[0] == ' ') _currentPrefix_ = _currentPrefix_.substr(1, _currentPrefix_.size());
 
     // "{USER_HEADER}" -> User prefix can have doubled spaces and spaces on the left
-    if( not _userHeaderStr_.empty() ){
+    if( not _userHeaderStr_.str().empty() ){
       strBuffer = "";
       Logger::formatUserHeaderStr(strBuffer);
       LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", strBuffer);
@@ -338,9 +352,9 @@ namespace {
     }
   }
   inline void Logger::formatUserHeaderStr(std::string &strBuffer_) {
-    if( not _userHeaderStr_.empty() ){
+    if( not _userHeaderStr_.str().empty() ){
       if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += getLogLevelColorStr(_currentLogLevel_);
-      strBuffer_ += _userHeaderStr_;
+      strBuffer_ += _userHeaderStr_.str();
       if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += "\033[0m";
     }
   }
@@ -523,15 +537,5 @@ namespace {
 //  std::string Logger::_outputFileName_;
 
 }
-
-#define LoggerInitializerImpl( lambdaInit ) \
-  static void* LoggerInitPlaceHolder = []{ \
-    try{ lambdaInit(); }         \
-    catch( ... ){                  \
-      std::cout << "Error occurred during LoggerInit within the lamda instruction. Please check." << std::endl; \
-      throw std::runtime_error("Error occurred during LoggerInit"); \
-    } \
-    return nullptr; \
-  }()
 
 //#endif //SIMPLE_CPP_LOGGER_LOGGER_IMPL_H

@@ -16,6 +16,7 @@
 #include <mutex>
 #include <vector>
 #include <unordered_set>
+#include "sstream"
 
 
 // Here is what you want to use
@@ -68,7 +69,6 @@
 // To setup the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
 
-
 // Implementation
 namespace {
 
@@ -115,6 +115,7 @@ namespace {
     inline static void setUserHeaderStr(const std::string &userHeaderStr_);
     inline static void setPrefixFormat(const std::string &prefixFormat_);
     inline static void setIndentStr(const std::string &indentStr_);
+    inline static std::stringstream& getUserHeader();
 
     //! Getters
     inline static bool isCleanLineBeforePrint();
@@ -179,11 +180,11 @@ namespace {
     static inline bool _propagateColorsOnUserHeader_{LOGGER_ENABLE_COLORS_ON_USER_HEADER};
     static inline bool _cleanLineBeforePrint_{LOGGER_WRITE_OUTFILE};
     static inline bool _writeInOutputFile_{false};
-    static inline LogLevel _maxLogLevel_{static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED)};
-    static inline PrefixLevel _prefixLevel_{static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL)};
-    static inline std::string _userHeaderStr_{};
     static inline std::string _prefixFormat_{};
     static inline std::string _indentStr_{};
+    static inline std::stringstream _userHeaderStr_{};
+    static inline LogLevel _maxLogLevel_{static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED)};
+    static inline PrefixLevel _prefixLevel_{static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL)};
 
     // internal
     static inline bool _isNewLine_{true};
