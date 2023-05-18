@@ -53,6 +53,9 @@ namespace {
     // same technique as other, but this time with no arguments
     _maxLogLevel_ = _currentLogLevel_;
   }
+  inline void Logger::setIsMuted(bool isMuted_){
+    _isMuted_ = isMuted_;
+  }
   inline void Logger::setEnableColors(bool enableColors_) {
     _enableColors_ = enableColors_;
   }
@@ -81,6 +84,9 @@ namespace {
   // Getters
   inline bool Logger::isCleanLineBeforePrint() {
     return _cleanLineBeforePrint_;
+  }
+  inline bool Logger::isMuted(){
+    return _isMuted_;
   }
   inline int Logger::getMaxLogLevelInt() {
     return static_cast<int>(_maxLogLevel_);

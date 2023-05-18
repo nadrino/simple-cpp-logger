@@ -30,10 +30,20 @@
 #define CAT(a, b) CAT_(a, b)
 #define MAKE_VARNAME_LINE(Var) CAT(Var, __LINE__)
 
-#define LogInvalid     (Logger{Logger::LogLevel::INVALID,  FILENAME, __LINE__})
+#define LogFatalImpl       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__})
+#define LogErrorImpl       (Logger{Logger::LogLevel::ERROR,    FILENAME, __LINE__})
+#define LogAlertImpl       (Logger{Logger::LogLevel::ALERT,    FILENAME, __LINE__})
+#define LogWarningImpl     (Logger{Logger::LogLevel::WARNING,  FILENAME, __LINE__})
+#define LogInfoImpl        (Logger{Logger::LogLevel::INFO,     FILENAME, __LINE__})
+#define LogDebugImpl       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__})
+#define LogTraceImpl       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__})
+#define LogInvalidImpl     (Logger{Logger::LogLevel::INVALID,  FILENAME, __LINE__})
 
 #define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
 #define GET_OVERLOADED_MACRO3(_1,_2,_3,NAME,...) NAME
+
+
+
 
 // Header
 namespace LoggerUtils{

@@ -20,22 +20,22 @@
 
 
 // Here is what you want to use
-#define LogFatal       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__})
-#define LogError       (Logger{Logger::LogLevel::ERROR,    FILENAME, __LINE__})
-#define LogAlert       (Logger{Logger::LogLevel::ALERT,    FILENAME, __LINE__})
-#define LogWarning     (Logger{Logger::LogLevel::WARNING,  FILENAME, __LINE__})
-#define LogInfo        (Logger{Logger::LogLevel::INFO,     FILENAME, __LINE__})
-#define LogDebug       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__})
-#define LogTrace       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__})
+#define LogFatal       (Logger::isMuted() ? LogInvalidImpl : LogFatalImpl)
+#define LogError       (Logger::isMuted() ? LogInvalidImpl : LogErrorImpl)
+#define LogAlert       (Logger::isMuted() ? LogInvalidImpl : LogAlertImpl)
+#define LogWarning     (Logger::isMuted() ? LogInvalidImpl : LogWarningImpl)
+#define LogInfo        (Logger::isMuted() ? LogInvalidImpl : LogInfoImpl)
+#define LogDebug       (Logger::isMuted() ? LogInvalidImpl : LogDebugImpl)
+#define LogTrace       (Logger::isMuted() ? LogInvalidImpl : LogTraceImpl)
 
 // conditional
-#define LogFatalIf(isPrint_)     (isPrint_ ? LogFatal   : LogInvalid)
-#define LogErrorIf(isPrint_)     (isPrint_ ? LogError   : LogInvalid)
-#define LogAlertIf(isPrint_)     (isPrint_ ? LogAlert   : LogInvalid)
-#define LogWarningIf(isPrint_)   (isPrint_ ? LogWarning : LogInvalid)
-#define LogInfoIf(isPrint_)      (isPrint_ ? LogInfo    : LogInvalid)
-#define LogDebugIf(isPrint_)     (isPrint_ ? LogDebug   : LogInvalid)
-#define LogTraceIf(isPrint_)     (isPrint_ ? LogTrace   : LogInvalid)
+#define LogFatalIf(isPrint_)     (isPrint_ ? LogFatal   : LogInvalidImpl)
+#define LogErrorIf(isPrint_)     (isPrint_ ? LogError   : LogInvalidImpl)
+#define LogAlertIf(isPrint_)     (isPrint_ ? LogAlert   : LogInvalidImpl)
+#define LogWarningIf(isPrint_)   (isPrint_ ? LogWarning : LogInvalidImpl)
+#define LogInfoIf(isPrint_)      (isPrint_ ? LogInfo    : LogInvalidImpl)
+#define LogDebugIf(isPrint_)     (isPrint_ ? LogDebug   : LogInvalidImpl)
+#define LogTraceIf(isPrint_)     (isPrint_ ? LogTrace   : LogInvalidImpl)
 
 // once
 #define LogFatalOnce       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__, true})
@@ -108,6 +108,7 @@ namespace {
     // It is an inherent feature as a **header-only** library
     inline static void setMaxLogLevel(const Logger& logger_);  // Example: Logger::setMaxLogLevel(LogDebug);
     inline static void setMaxLogLevel();                       // Example: LogDebug.setMaxLogLevel();
+    inline static void setIsMuted(bool isMuted_);
     inline static void setEnableColors(bool enableColors_);
     inline static void setCleanLineBeforePrint(bool cleanLineBeforePrint);
     inline static void setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_);
@@ -119,7 +120,7 @@ namespace {
 
     //! Getters
     inline static bool isCleanLineBeforePrint();
-
+    inline static bool isMuted();
     inline static int getMaxLogLevelInt();
     inline static const LogLevel & getMaxLogLevel();
     inline static std::string getPrefixString();                                // LogWarning.getPrefixString()
@@ -180,6 +181,7 @@ namespace {
     static inline bool _propagateColorsOnUserHeader_{LOGGER_ENABLE_COLORS_ON_USER_HEADER};
     static inline bool _cleanLineBeforePrint_{LOGGER_WRITE_OUTFILE};
     static inline bool _writeInOutputFile_{false};
+    static inline bool _isMuted_{false};
     static inline std::string _prefixFormat_{};
     static inline std::string _indentStr_{};
     static inline std::stringstream _userHeaderStr_{};
