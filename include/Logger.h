@@ -210,11 +210,12 @@ namespace {
     static bool _propagateColorsOnUserHeader_;
     static bool _cleanLineBeforePrint_;
     static bool _writeInOutputFile_;
-    static LogLevel _maxLogLevel_;
-    static PrefixLevel _prefixLevel_;
-    static std::string _userHeaderStr_;
+    static bool _isMuted_;
     static std::string _prefixFormat_;
     static std::string _indentStr_;
+    static std::stringstream _userHeaderStr_;
+    static LogLevel _maxLogLevel_;
+    static PrefixLevel _prefixLevel_;
 
     // internal
     static bool _isNewLine_;
@@ -223,11 +224,11 @@ namespace {
     static std::string _currentPrefix_;
     static std::string _outputFileName_;
     static std::mutex _loggerMutex_;
+    static std::unordered_set<size_t> _onceLogList_;
+    static Color _currentColor_;
+    static LogLevel _currentLogLevel_;
     static LoggerUtils::StreamBufferSupervisor* _streamBufferSupervisorPtr_;
     static LoggerUtils::StreamBufferSupervisor _streamBufferSupervisor_;
-    static LogLevel _currentLogLevel_;
-    static Color _currentColor_;
-    static std::unordered_set<size_t> _onceLogList_;
 
     // non-static
     std::lock_guard<std::mutex> _lock_{_loggerMutex_};
@@ -253,9 +254,10 @@ namespace {
   bool Logger::_cleanLineBeforePrint_{LOGGER_WRITE_OUTFILE};
   bool Logger::_disablePrintfLineJump_{false};
   bool Logger::_writeInOutputFile_{false};
+  bool Logger::_isMuted_{false};
   Logger::LogLevel Logger::_maxLogLevel_{static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED)};
   Logger::PrefixLevel Logger::_prefixLevel_{static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL)};
-  std::string Logger::_userHeaderStr_{};
+  std::stringstream Logger::_userHeaderStr_{};
   std::string Logger::_prefixFormat_{};
   std::string Logger::_indentStr_{};
 
