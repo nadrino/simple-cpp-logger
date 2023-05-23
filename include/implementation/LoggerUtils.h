@@ -5,12 +5,12 @@
 #ifndef SIMPLE_CPP_LOGGER_LOGGERUTILS_H
 #define SIMPLE_CPP_LOGGER_LOGGERUTILS_H
 
-#include <iostream>
+#include <thread>
+#include <vector>
+#include <string>
 #include <fstream>
-#include "thread"
-#include "vector"
-#include "string"
-#include "functional"
+#include <iostream>
+#include <functional>
 
 
 #ifndef HAS_CPP_17

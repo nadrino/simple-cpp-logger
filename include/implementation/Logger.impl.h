@@ -9,24 +9,23 @@
 
 #include "LoggerParameters.h"
 
-#include <cstdarg>
-#include <cstdio>
-#include <ctime>
-#include <string>
-#include <utility>
-#include <vector>
-#include <thread>
 #include <map>
 #include <mutex>
-#include <type_traits>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <memory>    // For std::unique_ptr
 #include <cmath>        // std::abs
+#include <ctime>
 #include <cstdio>
+#include <memory>    // For std::unique_ptr
+#include <string>
+#include <vector>
+#include <thread>
+#include <cstdio>
+#include <cstdarg>
+#include <utility>
+#include <sstream>
+#include <iomanip>
 #include <iostream>
+#include <algorithm>
+#include <type_traits>
 
 
 #define LoggerInitializerImpl( lambdaInit ) \

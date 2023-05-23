@@ -5,14 +5,14 @@
 #ifndef SIMPLE_CPP_LOGGER_LOGGERUTILS_IMPL_H
 #define SIMPLE_CPP_LOGGER_LOGGERUTILS_IMPL_H
 
-#include <iostream>
-#include <fstream>
+#include <cmath>
+#include <vector>
 #include <string>
-#include <algorithm>
 #include <memory>
 #include <cstring> // strrchr
-#include "cmath"
-#include "vector"
+#include <fstream>
+#include <iostream>
+#include <algorithm>
 
 #if defined(_WIN32)
 // Windows

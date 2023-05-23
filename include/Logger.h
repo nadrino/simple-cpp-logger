@@ -12,11 +12,11 @@
 #include "implementation/LoggerParameters.h"
 #include "implementation/LoggerUtils.h"
 
-#include <string>
 #include <mutex>
+#include <string>
 #include <vector>
+#include <sstream>
 #include <unordered_set>
-#include "sstream"
 
 
 // Here is what you want to use
