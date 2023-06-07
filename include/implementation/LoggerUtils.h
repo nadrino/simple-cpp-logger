@@ -30,14 +30,17 @@
 #define CAT(a, b) CAT_(a, b)
 #define MAKE_VARNAME_LINE(Var) CAT(Var, __LINE__)
 
-#define LogFatalImpl       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__})
-#define LogErrorImpl       (Logger{Logger::LogLevel::ERROR,    FILENAME, __LINE__})
-#define LogAlertImpl       (Logger{Logger::LogLevel::ALERT,    FILENAME, __LINE__})
-#define LogWarningImpl     (Logger{Logger::LogLevel::WARNING,  FILENAME, __LINE__})
-#define LogInfoImpl        (Logger{Logger::LogLevel::INFO,     FILENAME, __LINE__})
-#define LogDebugImpl       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__})
-#define LogTraceImpl       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__})
-#define LogInvalidImpl     (Logger{Logger::LogLevel::INVALID,  FILENAME, __LINE__})
+
+#define LogDispatcher( logLevel_, isPrint_, isOnce_ )  (Logger{((!(isPrint_) || Logger::isMuted()) ? Logger::LogLevel::INVALID : logLevel_), FILENAME, __LINE__, isOnce_})
+
+#define LogFatalImpl( isPrint_, isOnce_)     (LogDispatcher(Logger::LogLevel::FATAL,   isPrint_, isOnce_))
+#define LogErrorImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::ERROR,   isPrint_, isOnce_))
+#define LogAlertImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::ALERT,   isPrint_, isOnce_))
+#define LogWarningImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::WARNING, isPrint_, isOnce_))
+#define LogInfoImpl( isPrint_, isOnce_)     (LogDispatcher(Logger::LogLevel::INFO,    isPrint_, isOnce_))
+#define LogDebugImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::DEBUG,   isPrint_, isOnce_))
+#define LogTraceImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::TRACE,   isPrint_, isOnce_))
+
 
 #define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
 #define GET_OVERLOADED_MACRO3(_1,_2,_3,NAME,...) NAME
