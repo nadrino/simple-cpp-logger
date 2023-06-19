@@ -20,31 +20,31 @@
 
 
 // Here is what you want to use
-#define LogFatal       (Logger::isMuted() ? LogInvalidImpl : LogFatalImpl)
-#define LogError       (Logger::isMuted() ? LogInvalidImpl : LogErrorImpl)
-#define LogAlert       (Logger::isMuted() ? LogInvalidImpl : LogAlertImpl)
-#define LogWarning     (Logger::isMuted() ? LogInvalidImpl : LogWarningImpl)
-#define LogInfo        (Logger::isMuted() ? LogInvalidImpl : LogInfoImpl)
-#define LogDebug       (Logger::isMuted() ? LogInvalidImpl : LogDebugImpl)
-#define LogTrace       (Logger::isMuted() ? LogInvalidImpl : LogTraceImpl)
+#define LogFatal                (LogFatalImpl( true, false ))
+#define LogError                (LogErrorImpl( true, false ))
+#define LogAlert                (LogAlertImpl( true, false ))
+#define LogWarning              (LogWarningImpl( true, false ))
+#define LogInfo                 (LogInfoImpl( true, false ))
+#define LogDebug                (LogDebugImpl( true, false ))
+#define LogTrace                (LogTraceImpl( true, false ))
 
 // conditional
-#define LogFatalIf(isPrint_)     (isPrint_ ? LogFatal   : LogInvalidImpl)
-#define LogErrorIf(isPrint_)     (isPrint_ ? LogError   : LogInvalidImpl)
-#define LogAlertIf(isPrint_)     (isPrint_ ? LogAlert   : LogInvalidImpl)
-#define LogWarningIf(isPrint_)   (isPrint_ ? LogWarning : LogInvalidImpl)
-#define LogInfoIf(isPrint_)      (isPrint_ ? LogInfo    : LogInvalidImpl)
-#define LogDebugIf(isPrint_)     (isPrint_ ? LogDebug   : LogInvalidImpl)
-#define LogTraceIf(isPrint_)     (isPrint_ ? LogTrace   : LogInvalidImpl)
+#define LogFatalIf(isPrint_)    (LogFatalImpl( isPrint_, false ))
+#define LogErrorIf(isPrint_)    (LogErrorImpl( isPrint_, false ))
+#define LogAlertIf(isPrint_)    (LogAlertImpl( isPrint_, false ))
+#define LogWarningIf(isPrint_)  (LogWarningImpl( isPrint_, false ))
+#define LogInfoIf(isPrint_)     (LogInfoImpl( isPrint_, false ))
+#define LogDebugIf(isPrint_)    (LogDebugImpl( isPrint_, false ))
+#define LogTraceIf(isPrint_)    (LogTraceImpl( isPrint_, false ))
 
 // once
-#define LogFatalOnce       (Logger{Logger::LogLevel::FATAL,    FILENAME, __LINE__, true})
-#define LogErrorOnce       (Logger{Logger::LogLevel::ERROR,    FILENAME, __LINE__, true})
-#define LogAlertOnce       (Logger{Logger::LogLevel::ALERT,    FILENAME, __LINE__, true})
-#define LogWarningOnce     (Logger{Logger::LogLevel::WARNING,  FILENAME, __LINE__, true})
-#define LogInfoOnce        (Logger{Logger::LogLevel::INFO,     FILENAME, __LINE__, true})
-#define LogDebugOnce       (Logger{Logger::LogLevel::DEBUG,    FILENAME, __LINE__, true})
-#define LogTraceOnce       (Logger{Logger::LogLevel::TRACE,    FILENAME, __LINE__, true})
+#define LogFatalOnce            (LogFatalImpl( true, true ))
+#define LogErrorOnce            (LogErrorImpl( true, true ))
+#define LogAlertOnce            (LogAlertImpl( true, true ))
+#define LogWarningOnce          (LogWarningImpl( true, true ))
+#define LogInfoOnce             (LogInfoImpl( true, true ))
+#define LogDebugOnce            (LogDebugImpl( true, true ))
+#define LogTraceOnce            (LogTraceImpl( true, true ))
 
 // To make assertions
 #define LogThrowIf2(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
@@ -66,7 +66,7 @@
 
 #define LogScopeIndent Logger::ScopedIndent MAKE_VARNAME_LINE(scopeIndentTempObj);
 
-// To setup the logger in a given source file
+// To set up the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
 
 // Implementation
@@ -273,6 +273,8 @@ namespace {
   Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
   Logger::Color Logger::_currentColor_{Logger::Color::RESET};
   std::unordered_set<size_t> Logger::_onceLogList_{};
+
+
 #endif
 
 }

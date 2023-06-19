@@ -291,7 +291,13 @@ namespace {
       time_t rawTime = std::time(nullptr);
       struct tm timeInfo = *localtime(&rawTime);
       std::stringstream ss;
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ <= 4)
+      char buffer[128];
+      std::strftime(buffer, sizeof(buffer), LOGGER_TIME_FORMAT, &timeInfo);
+      ss << buffer;
+#else
       ss << std::put_time(&timeInfo, LOGGER_TIME_FORMAT);
+#endif
       strBuffer += ss.str();
     }
     LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{TIME}", strBuffer);
@@ -515,7 +521,13 @@ namespace {
     time_t rawTime = std::time(nullptr);
     struct tm timeInfo = *localtime(&rawTime);
     std::stringstream ss;
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ <= 4)
+    char buffer[128];
+    std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &timeInfo);
+    ss << buffer;
+#else
     ss << std::put_time(&timeInfo, "%Y%m%d_%H%M%S");
+#endif
     LoggerUtils::replaceSubstringInsideInputString(_outputFileName_, "{TIME}", ss.str());
     _streamBufferSupervisorPtr_->openOutFileStream(_outputFileName_);
   }
