@@ -119,6 +119,8 @@ namespace {
     inline static void setPrefixFormat(const std::string &prefixFormat_);
     inline static void setIndentStr(const std::string &indentStr_);
     inline static std::stringstream& getUserHeader();
+    inline static std::string indent(){ LogIndent; return {}; }
+    inline static std::string unIndent(){ LogUnIndent; return {}; }
 
     //! Getters
     inline static bool isCleanLineBeforePrint();
