@@ -65,6 +65,8 @@
 #define LogReturnIf(...) GET_OVERLOADED_MACRO3(__VA_ARGS__, LogReturnIf3, LogReturnIf2, LogReturnIf1)(__VA_ARGS__)
 
 #define LogScopeIndent Logger::ScopedIndent MAKE_VARNAME_LINE(scopeIndentTempObj);
+#define LogIndent Logger::setIndentStr(Logger::getIndentStr() + "  ")
+#define LogUnIndent Logger::setIndentStr(Logger::getIndentStr().substr(0, Logger::getIndentStr().size()-2))
 
 // To set up the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
@@ -117,6 +119,8 @@ namespace {
     inline static void setPrefixFormat(const std::string &prefixFormat_);
     inline static void setIndentStr(const std::string &indentStr_);
     inline static std::stringstream& getUserHeader();
+    inline static std::string indent(){ LogIndent; return {}; }
+    inline static std::string unIndent(){ LogUnIndent; return {}; }
 
     //! Getters
     inline static bool isCleanLineBeforePrint();
@@ -236,8 +240,8 @@ namespace {
 
   public:
     struct ScopedIndent{
-      inline ScopedIndent(){ Logger::setIndentStr(Logger::getIndentStr() + "  "); }
-      inline ~ScopedIndent(){ Logger::setIndentStr(Logger::getIndentStr().substr(0, Logger::getIndentStr().size()-2)); }
+      inline ScopedIndent(){ LogIndent; }
+      inline ~ScopedIndent(){ LogUnIndent; }
     };
 
   };
