@@ -246,8 +246,10 @@ namespace {
   }
 
   inline void Logger::throwError(const std::string& errorStr_) {
-    if( errorStr_.empty() ) throw std::runtime_error("exception thrown by the logger.");
-    else throw std::runtime_error("exception thrown by the logger: " + errorStr_);
+    std::stringstream ss;
+    ss << "exception thrown by the logger";
+    ss << (errorStr_.empty()? "." : ":" + errorStr_);
+    throw std::runtime_error( ss.str() );
   }
 
   // Deprecated (left here for compatibility)
