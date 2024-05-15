@@ -32,7 +32,8 @@
   static void* MAKE_VARNAME_LINE(LoggerInitPlaceHolder) = []{ \
     try{ lambdaInit(); }         \
     catch( ... ){                  \
-      std::cout << "Error occurred during LoggerInit within the lamda instruction. Please check." << std::endl; \
+      if (Logger::getStreamBufferSupervisorPtr() != nullptr) Logger::getStreamBufferSupervisorPtr()->flush(); \
+      std::cerr << "Error occurred during LoggerInit within the lamda instruction. Please check." << std::endl; \
       throw std::runtime_error("Error occurred during LoggerInit"); \
     } \
     return nullptr; \
@@ -249,6 +250,7 @@ namespace {
     std::stringstream ss;
     ss << "exception thrown by the logger";
     ss << (errorStr_.empty()? "." : ":" + errorStr_);
+    if (Logger::getStreamBufferSupervisorPtr() != nullptr) Logger::getStreamBufferSupervisorPtr()->flush();
     throw std::runtime_error( ss.str() );
   }
 
