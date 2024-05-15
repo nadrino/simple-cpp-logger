@@ -94,6 +94,11 @@ namespace LoggerUtils{
       if( _outFileStream_.is_open() ) _outFileStream_ << f;
       return *this;
     }
+    StreamBufferSupervisor &flush(){
+         if(*_outputStream_) _outputStream_->flush();
+         if(_outFileStream_.is_open()) _outFileStream_.flush();
+         return *this;
+    }
 
   private:
     std::streambuf* _streamBufferPtr_{nullptr};

@@ -47,7 +47,7 @@
 #define LogTraceOnce            (LogTraceImpl( true, true ))
 
 // To make assertions
-#define LogThrowIf2(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_);}
+#define LogThrowIf2(isThrowing_, errorMessage_)  if(isThrowing_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).throwError(#isThrowing_ ": " #errorMessage_);}
 #define LogThrowIf1(isThrowing_) LogThrowIf2(isThrowing_, #isThrowing_)
 #define LogThrowIf(...) GET_OVERLOADED_MACRO2(__VA_ARGS__, LogThrowIf2, LogThrowIf1)(__VA_ARGS__)
 #define LogAssert(assertion_, errorMessage_)    LogThrowIf(not (assertion_), errorMessage_)
