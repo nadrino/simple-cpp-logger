@@ -317,6 +317,15 @@ namespace {
     }
     LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{FILELINE}", strBuffer);
 
+    // {FILE} and {LINE} -> at least DEBUG level
+    strBuffer = "";
+    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::DEBUG){
+      if(_enableColors_) strBuffer += "\x1b[90m"; // grey
+      strBuffer += _currentFileName_.substr(0, _currentFileName_.find_last_of('.'));
+      if(_enableColors_) strBuffer += "\033[0m";
+    }
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{FILENAME}", strBuffer);
+
     // "{THREAD}" -> at least FULL level
     strBuffer = "";
     if(Logger::_prefixLevel_ >= Logger::PrefixLevel::FULL){
