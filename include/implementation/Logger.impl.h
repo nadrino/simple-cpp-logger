@@ -2,10 +2,8 @@
 // Created by Nadrino on 24/08/2020.
 //
 
-//#ifndef SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
-//#define SIMPLE_CPP_LOGGER_LOGGER_IMPL_H
-
 #pragma once
+
 
 #include "LoggerParameters.h"
 
@@ -53,47 +51,8 @@ namespace {
     // same technique as other, but this time with no arguments
     _maxLogLevel_ = _currentLogLevel_;
   }
-  inline void Logger::setIsMuted(bool isMuted_){
-    _isMuted_ = isMuted_;
-  }
-  inline void Logger::setEnableColors(bool enableColors_) {
-    _enableColors_ = enableColors_;
-  }
-  inline void Logger::setCleanLineBeforePrint(bool cleanLineBeforePrint) {
-    _cleanLineBeforePrint_ = cleanLineBeforePrint;
-  }
-  inline void Logger::setPropagateColorsOnUserHeader(bool propagateColorsOnUserHeader_) {
-    _propagateColorsOnUserHeader_ = propagateColorsOnUserHeader_;
-  }
-  inline void Logger::setPrefixLevel(const PrefixLevel &prefixLevel_) {
-    _prefixLevel_ = prefixLevel_;
-  }
-  inline void Logger::setUserHeaderStr(const std::string &userHeaderStr_) {
-    _userHeaderStr_.str(userHeaderStr_);
-  }
-  inline void Logger::setPrefixFormat(const std::string &prefixFormat_) {
-    _prefixFormat_ = prefixFormat_;
-  }
-  inline void Logger::setIndentStr(const std::string &indentStr_){
-    _indentStr_ = indentStr_;
-  }
-  inline std::stringstream& Logger::getUserHeader(){
-    return _userHeaderStr_;
-  }
 
   // Getters
-  inline bool Logger::isCleanLineBeforePrint() {
-    return _cleanLineBeforePrint_;
-  }
-  inline bool Logger::isMuted(){
-    return _isMuted_;
-  }
-  inline int Logger::getMaxLogLevelInt() {
-    return static_cast<int>(_maxLogLevel_);
-  }
-  inline const Logger::LogLevel & Logger::getMaxLogLevel() {
-    return _maxLogLevel_;
-  }
   inline std::string Logger::getPrefixString() {
     buildCurrentPrefix();
     return _currentPrefix_;
@@ -101,12 +60,6 @@ namespace {
   inline std::string Logger::getPrefixString(const Logger& loggerConstructor){
     // Calling the constructor will automatically update the fields
     return Logger::getPrefixString();
-  }
-  inline LoggerUtils::StreamBufferSupervisor *Logger::getStreamBufferSupervisorPtr() {
-    return _streamBufferSupervisorPtr_;
-  }
-  inline const std::string& Logger::getIndentStr(){
-    return _indentStr_;
   }
 
 
@@ -149,23 +102,9 @@ namespace {
     Logger::setupStreamBufferSupervisor(); // in case it was not
     *_streamBufferSupervisorPtr_ << static_cast<char>(27) << "[2K" << "\r";
   }
-  inline void Logger::triggerNewLine(){
-    _isNewLine_ = true;
-  }
   inline void Logger::printNewLine(){
-    if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
     *_streamBufferSupervisorPtr_ << std::endl;
     triggerNewLine();
-  }
-  inline std::string Logger::getColorEscapeCode(Logger::Color color_){
-    if( color_ == Logger::Color::RESET ) return {"\x1b[0m"};
-    if( color_ == Logger::Color::BG_RED ) return {"\x1b[41m"};
-    if( color_ == Logger::Color::BG_GREEN ) return {"\x1b[42m"};
-    if( color_ == Logger::Color::BG_YELLOW ) return {"\x1b[43m"};
-    if( color_ == Logger::Color::BG_BLUE ) return {"\x1b[44m"};
-    if( color_ == Logger::Color::BG_MAGENTA ) return {"\x1b[45m"};
-    if( color_ == Logger::Color::BG_GREY ) return {"\x1b[46m"};
-    return {};
   }
 
   //! Non-static Methods
@@ -199,7 +138,6 @@ namespace {
     // Handling std::endl
     if (_currentLogLevel_ > _maxLogLevel_) return *this;
 
-    if( _currentColor_ != Logger::Color::RESET ) *_streamBufferSupervisorPtr_ << getColorEscapeCode(Logger::Color::RESET);
     *_streamBufferSupervisorPtr_ << f;
     triggerNewLine();
 
@@ -210,10 +148,6 @@ namespace {
   }
   inline Logger &Logger::operator()(bool condition_){
     if( not condition_ ) Logger::_currentLogLevel_ = LogLevel::INVALID;
-    return *this;
-  }
-  inline Logger &Logger::operator()(Logger::Color printColor_){
-    _currentColor_ = printColor_;
     return *this;
   }
 
@@ -241,9 +175,6 @@ namespace {
         _onceLogList_.insert( instanceHash );
       }
     }
-  }
-  inline Logger::~Logger() {
-    _currentColor_ = Logger::Color::RESET;
   }
 
   inline void Logger::throwError(const std::string& errorStr_) {
@@ -273,7 +204,7 @@ namespace {
 
     // Nothing else -> NONE level
     if( Logger::_prefixLevel_ == Logger::PrefixLevel::NONE ){
-      if( not _userHeaderStr_.str().empty() ){
+      if( not _userHeaderSs_.str().empty() ){
         Logger::formatUserHeaderStr(_currentPrefix_);
         _currentPrefix_ += " "; // extra space
       }
@@ -338,7 +269,7 @@ namespace {
     LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{THREAD}", strBuffer);
 
 
-    if( _userHeaderStr_.str().empty() ){
+    if( _userHeaderSs_.str().empty() ){
       LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", "");
     }
 
@@ -348,7 +279,7 @@ namespace {
     while(_currentPrefix_[0] == ' ') _currentPrefix_ = _currentPrefix_.substr(1, _currentPrefix_.size());
 
     // "{USER_HEADER}" -> User prefix can have doubled spaces and spaces on the left
-    if( not _userHeaderStr_.str().empty() ){
+    if( not _userHeaderSs_.str().empty() ){
       strBuffer = "";
       Logger::formatUserHeaderStr(strBuffer);
       LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", strBuffer);
@@ -370,59 +301,36 @@ namespace {
     if (not _currentPrefix_.empty()){
       _currentPrefix_ += ": ";
     }
-
-    if( _currentColor_ != Logger::Color::RESET ){
-      _currentPrefix_ += getColorEscapeCode(_currentColor_);
-    }
   }
   inline void Logger::formatUserHeaderStr(std::string &strBuffer_) {
-    if( not _userHeaderStr_.str().empty() ){
+    if( not _userHeaderSs_.str().empty() ){
       if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += getLogLevelColorStr(_currentLogLevel_);
-      strBuffer_ += _userHeaderStr_.str();
-      if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += "\033[0m";
+      strBuffer_ += _userHeaderSs_.str();
+      if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += LOGGER_STR_COLOR_RESET;
     }
   }
   inline std::string Logger::getLogLevelColorStr(const LogLevel &selectedLogLevel_) {
     switch (selectedLogLevel_) {
-      case Logger::LogLevel::FATAL:
-        return "\033[41m";
-      case Logger::LogLevel::ERROR:
-        return "\033[31m";
-      case Logger::LogLevel::ALERT:
-        return "\033[35m";
-      case Logger::LogLevel::WARNING:
-        return "\033[33m";
-      case Logger::LogLevel::INFO:
-        return "\x1b[32m";
-      case Logger::LogLevel::DEBUG:
-        return "\x1b[94m";
-      case Logger::LogLevel::TRACE:
-        return "\x1b[36m";
-      default:
-        return "";
+      case Logger::LogLevel::FATAL:   return LOGGER_STR_COLOR_RED_BG;
+      case Logger::LogLevel::ERROR:   return LOGGER_STR_COLOR_RED;
+      case Logger::LogLevel::ALERT:   return LOGGER_STR_COLOR_MAGENTA;
+      case Logger::LogLevel::WARNING: return LOGGER_STR_COLOR_YELLOW;
+      case Logger::LogLevel::INFO:    return LOGGER_STR_COLOR_GREEN;
+      case Logger::LogLevel::DEBUG:   return LOGGER_STR_COLOR_LIGHT_BLUE;
+      case Logger::LogLevel::TRACE:   return LOGGER_STR_COLOR_CYAN;
+      default:                        return {};
     }
   }
   inline std::string Logger::getLogLevelStr(const LogLevel &selectedLogLevel_) {
-
     switch (selectedLogLevel_) {
-
-      case Logger::LogLevel::FATAL:
-        return "FATAL";
-      case Logger::LogLevel::ERROR:
-        return "ERROR";
-      case Logger::LogLevel::ALERT:
-        return "ALERT";
-      case Logger::LogLevel::WARNING:
-        return "WARN";
-      case Logger::LogLevel::INFO:
-        return "INFO";
-      case Logger::LogLevel::DEBUG:
-        return "DEBUG";
-      case Logger::LogLevel::TRACE:
-        return "TRACE";
-      default:
-        return "";
-
+      case Logger::LogLevel::FATAL:   return "FATAL";
+      case Logger::LogLevel::ERROR:   return "ERROR";
+      case Logger::LogLevel::ALERT:   return "ALERT";
+      case Logger::LogLevel::WARNING: return "WARN";
+      case Logger::LogLevel::INFO:    return "INFO";
+      case Logger::LogLevel::DEBUG:   return "DEBUG";
+      case Logger::LogLevel::TRACE:   return "TRACE";
+      default:                        return {};
     }
   }
   template<typename ... Args> inline void Logger::printFormat(const char *fmt_str, Args ... args ){
@@ -511,7 +419,7 @@ namespace {
       *_streamBufferSupervisorPtr_ << formattedString;
 
       if (_enableColors_ and _currentLogLevel_ == LogLevel::FATAL)
-        *_streamBufferSupervisorPtr_ << LoggerUtils::formatString("\033[0m");
+        *_streamBufferSupervisorPtr_ << LoggerUtils::formatString( LOGGER_STR_COLOR_RESET );
     } // else multiline
 
   }
@@ -553,12 +461,11 @@ namespace {
 //  bool Logger::_disablePrintfLineJump_ = false;
 //  Logger::LogLevel Logger::_maxLogLevel_(static_cast<Logger::LogLevel>(LOGGER_MAX_LOG_LEVEL_PRINTED));
 //  Logger::PrefixLevel Logger::_prefixLevel_(static_cast<Logger::PrefixLevel>(LOGGER_PREFIX_LEVEL));
-//  std::string Logger::_userHeaderStr_;
+//  std::string Logger::_userHeaderSs_;
 //  std::string Logger::_prefixFormat_;
 
 //  std::string Logger::_currentPrefix_;
 //  Logger::LogLevel Logger::_currentLogLevel_{Logger::LogLevel::TRACE};
-//  Logger::Color Logger::_currentColor_{Logger::Color::RESET};
 //  std::string Logger::_currentFileName_;
 //  int Logger::_currentLineNumber_{-1};
 //  bool Logger::_isNewLine_{true};

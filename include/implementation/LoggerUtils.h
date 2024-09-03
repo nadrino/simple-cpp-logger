@@ -2,8 +2,10 @@
 // Created by Nadrino on 25/04/2021.
 //
 
-#ifndef SIMPLE_CPP_LOGGER_LOGGERUTILS_H
-#define SIMPLE_CPP_LOGGER_LOGGERUTILS_H
+#pragma once
+
+
+#include "LoggerMacros.h"
 
 #include <thread>
 #include <vector>
@@ -11,41 +13,6 @@
 #include <fstream>
 #include <iostream>
 #include <functional>
-
-
-#ifndef HAS_CPP_17
-#define HAS_CPP_17 (__cplusplus >= 201703L)
-#endif // HAS_CPP_17
-
-#ifndef HAS_CPP_14
-#define HAS_CPP_14 (__cplusplus >= 201300L)
-#endif // HAS_CPP_14
-
-#ifndef HAS_CPP_11
-#define HAS_CPP_11 (__cplusplus >= 201103L)
-#endif // HAS_CPP_11
-
-
-#define CAT_(a, b) a ## b
-#define CAT(a, b) CAT_(a, b)
-#define MAKE_VARNAME_LINE(Var) CAT(Var, __LINE__)
-
-
-#define LogDispatcher( logLevel_, isPrint_, isOnce_ )  (Logger{((!(isPrint_) || Logger::isMuted()) ? Logger::LogLevel::INVALID : logLevel_), FILENAME, __LINE__, isOnce_})
-
-#define LogFatalImpl( isPrint_, isOnce_)     (LogDispatcher(Logger::LogLevel::FATAL,   isPrint_, isOnce_))
-#define LogErrorImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::ERROR,   isPrint_, isOnce_))
-#define LogAlertImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::ALERT,   isPrint_, isOnce_))
-#define LogWarningImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::WARNING, isPrint_, isOnce_))
-#define LogInfoImpl( isPrint_, isOnce_)     (LogDispatcher(Logger::LogLevel::INFO,    isPrint_, isOnce_))
-#define LogDebugImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::DEBUG,   isPrint_, isOnce_))
-#define LogTraceImpl( isPrint_, isOnce_ )     (LogDispatcher(Logger::LogLevel::TRACE,   isPrint_, isOnce_))
-
-
-#define GET_OVERLOADED_MACRO2(_1,_2,NAME,...) NAME
-#define GET_OVERLOADED_MACRO3(_1,_2,_3,NAME,...) NAME
-
-
 
 
 // Header
@@ -133,5 +100,3 @@ namespace LoggerUtils{
 }
 
 #include "LoggerUtils.impl.h"
-
-#endif //SIMPLE_CPP_LOGGER_LOGGERUTILS_H
