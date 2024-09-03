@@ -153,7 +153,8 @@ namespace {
   protected:
 
     inline static void buildCurrentPrefix();
-    inline static void formatUserHeaderStr(std::string &strBuffer_);
+    inline static void generateUserHeader(std::string &strBuffer_);
+    inline static std::string generateUserHeader(){ std::string out{}; generateUserHeader(out); return out; }
     inline static std::string getLogLevelColorStr(const LogLevel &selectedLogLevel_);
     inline static std::string getLogLevelStr(const LogLevel &selectedLogLevel_);
     template<typename ... Args> inline static void printFormat(const char *fmt_str, Args ... args );

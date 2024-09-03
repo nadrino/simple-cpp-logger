@@ -197,7 +197,7 @@ namespace {
   // Protected Methods
   inline void Logger::buildCurrentPrefix() {
 
-    std::string strBuffer;
+    std::stringstream ssBuffer;
 
     // RESET THE PREFIX
     _currentPrefix_ = "";
@@ -205,7 +205,7 @@ namespace {
     // Nothing else -> NONE level
     if( Logger::_prefixLevel_ == Logger::PrefixLevel::NONE ){
       if( not _userHeaderSs_.str().empty() ){
-        Logger::formatUserHeaderStr(_currentPrefix_);
+        Logger::generateUserHeader(_currentPrefix_);
         _currentPrefix_ += " "; // extra space
       }
       return;
@@ -221,7 +221,7 @@ namespace {
     // {SEVERITY} -> at least MINIMAL level -> LATER, can introduce repeated space in the prefix!
 
     // {TIME} -> at least PRODUCTION level
-    strBuffer = "";
+    ssBuffer.str("");
     if (Logger::_prefixLevel_ >= Logger::PrefixLevel::PRODUCTION) {
       time_t rawTime = std::time(nullptr);
       struct tm timeInfo = *localtime(&rawTime);
@@ -233,40 +233,36 @@ namespace {
 #else
       ss << std::put_time(&timeInfo, LOGGER_TIME_FORMAT);
 #endif
-      strBuffer += ss.str();
+      ssBuffer << ss.str();
     }
-    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{TIME}", strBuffer);
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{TIME}", ssBuffer.str());
 
     // {FILE} and {LINE} -> at least DEBUG level
-    strBuffer = "";
+    ssBuffer.str("");
     if(Logger::_prefixLevel_ >= Logger::PrefixLevel::DEBUG){
-      if(_enableColors_) strBuffer += "\x1b[90m"; // grey
-      strBuffer += _currentFileName_;
-      strBuffer += ":";
-      strBuffer += std::to_string(_currentLineNumber_);
-      if(_enableColors_) strBuffer += "\033[0m";
+      ssBuffer << (_enableColors_ ? LOGGER_STR_COLOR_LIGHT_GREY : "");
+      ssBuffer << _currentFileName_ << ":" << std::to_string(_currentLineNumber_);
+      ssBuffer << (_enableColors_ ? LOGGER_STR_COLOR_RESET : "");
     }
-    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{FILELINE}", strBuffer);
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{FILELINE}", ssBuffer.str());
 
-    // {FILE} and {LINE} -> at least DEBUG level
-    strBuffer = "";
-    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::DEBUG){
-      if(_enableColors_) strBuffer += "\x1b[90m"; // grey
-      strBuffer += _currentFileName_.substr(0, _currentFileName_.find_last_of('.'));
-      if(_enableColors_) strBuffer += "\033[0m";
+    // {FILENAME} -> at least PRODUCTION level
+    ssBuffer.str("");
+    if(Logger::_prefixLevel_ >= Logger::PrefixLevel::PRODUCTION){
+      ssBuffer << (_enableColors_ ? LOGGER_STR_COLOR_LIGHT_GREY : "");
+      ssBuffer << _currentFileName_.substr(0, _currentFileName_.find_last_of('.'));
+      ssBuffer << (_enableColors_ ? LOGGER_STR_COLOR_RESET : "");
     }
-    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{FILENAME}", strBuffer);
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{FILENAME}", ssBuffer.str());
 
     // "{THREAD}" -> at least FULL level
-    strBuffer = "";
+    ssBuffer.str("");
     if(Logger::_prefixLevel_ >= Logger::PrefixLevel::FULL){
-      std::stringstream ss;
-      if(_enableColors_) ss << "\x1b[90m";
-      ss << "(thread: " << std::this_thread::get_id();
-      if(_enableColors_) ss << ")\033[0m";
-      strBuffer = ss.str();
+      ssBuffer << (_enableColors_ ? LOGGER_STR_COLOR_LIGHT_GREY : "");
+      ssBuffer << "(thread: " << std::this_thread::get_id() << ")";
+      ssBuffer << (_enableColors_ ? LOGGER_STR_COLOR_RESET : "");
     }
-    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{THREAD}", strBuffer);
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{THREAD}", ssBuffer.str());
 
 
     if( _userHeaderSs_.str().empty() ){
@@ -280,19 +276,19 @@ namespace {
 
     // "{USER_HEADER}" -> User prefix can have doubled spaces and spaces on the left
     if( not _userHeaderSs_.str().empty() ){
-      strBuffer = "";
-      Logger::formatUserHeaderStr(strBuffer);
-      LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", strBuffer);
+      ssBuffer.str("");
+      ssBuffer << Logger::generateUserHeader();
+      LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{USER_HEADER}", ssBuffer.str());
     }
 
     // {SEVERITY} -> at least MINIMAL level
-    strBuffer = "";
+    ssBuffer.str("");
     if( Logger::_prefixLevel_ >= Logger::PrefixLevel::MINIMAL ) {
-      if (_enableColors_){ strBuffer += getLogLevelColorStr(_currentLogLevel_); }
-      strBuffer += LoggerUtils::padString(getLogLevelStr(_currentLogLevel_), 5);
-      if (_enableColors_){ strBuffer += "\033[0m"; }
+      ssBuffer << (_enableColors_ ? Logger::getLogLevelColorStr(_currentLogLevel_) : "");
+      ssBuffer << LoggerUtils::padString(getLogLevelStr(_currentLogLevel_), 5);
+      ssBuffer << (_enableColors_ ? LOGGER_STR_COLOR_RESET : "");
     }
-    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{SEVERITY}", strBuffer);
+    LoggerUtils::replaceSubstringInsideInputString(_currentPrefix_, "{SEVERITY}", ssBuffer.str());
 
     // cleanup (make sure there's no trailing spaces)
     while(_currentPrefix_[_currentPrefix_.size()-1] == ' ') _currentPrefix_ = _currentPrefix_.substr(0, _currentPrefix_.size()-1);
@@ -302,7 +298,7 @@ namespace {
       _currentPrefix_ += ": ";
     }
   }
-  inline void Logger::formatUserHeaderStr(std::string &strBuffer_) {
+  inline void Logger::generateUserHeader(std::string &strBuffer_) {
     if( not _userHeaderSs_.str().empty() ){
       if(_enableColors_ and _propagateColorsOnUserHeader_) strBuffer_ += getLogLevelColorStr(_currentLogLevel_);
       strBuffer_ += _userHeaderSs_.str();
