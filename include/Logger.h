@@ -53,6 +53,12 @@
 #define LogAssert(assertion_, errorMessage_)    LogThrowIf(not (assertion_), errorMessage_)
 #define LogThrow(errorMessage_)                 LogThrowIf(true, errorMessage_)
 
+// Assertion using std::exit() instead of throw
+#define LogExitIf2(isExit_, errorMessage_)  if(isExit_){(LogError << "(" << __PRETTY_FUNCTION__ << "): "<< errorMessage_ << std::endl).triggerExit(#isExit_ ": " #errorMessage_);}
+#define LogExitIf1(isExit_) LogExitIf2(isExit_, #isExit_)
+#define LogExitIf(...) GET_OVERLOADED_MACRO2(__VA_ARGS__, LogExitIf2, LogExitIf1)(__VA_ARGS__)
+#define LogExit(errorMessage_)                 LogExitIf(true, errorMessage_)
+
 // Within loops
 #define LogContinueIf2(isContinue_, continueMessage_)  if(isContinue_){(LogWarning << "(" << __PRETTY_FUNCTION__ << "): "<< continueMessage_ << std::endl); continue; }
 #define LogContinueIf1(isContinue_)  LogContinueIf2(isContinue_, #isContinue_)
@@ -145,6 +151,7 @@ namespace {
     inline Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_, bool once_=false);
 
     inline static void throwError(const std::string& errorStr_ = "");
+    inline static void triggerExit(const std::string& errorStr_ = "");
 
     // Deprecated (left here for compatibility)
     inline static void setMaxLogLevel(int maxLogLevel_);

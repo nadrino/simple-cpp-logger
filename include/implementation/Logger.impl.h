@@ -179,10 +179,15 @@ namespace {
 
   inline void Logger::throwError(const std::string& errorStr_) {
     std::stringstream ss;
-    ss << "exception thrown by the logger";
-    ss << (errorStr_.empty()? "." : ":" + errorStr_);
+    ss << "exception thrown by the logger at " << _currentFileName_ << ":" << _currentLineNumber_;
+    ss << (errorStr_.empty()? "." : ": " + errorStr_);
     if (Logger::getStreamBufferSupervisorPtr() != nullptr) Logger::getStreamBufferSupervisorPtr()->flush();
     throw std::runtime_error( ss.str() );
+  }
+  inline void Logger::triggerExit( const std::string &errorStr_ ){
+    std::cout << "std::exit() called by the logger at " << _currentFileName_ << ":" << _currentLineNumber_;
+    std::cout << (errorStr_.empty()? "." : ": " + errorStr_) << std::endl;
+    std::exit( EXIT_FAILURE );
   }
 
   // Deprecated (left here for compatibility)
