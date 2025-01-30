@@ -152,7 +152,7 @@ namespace {
   }
 
   // C-tor D-tor
-  inline Logger::Logger(const LogLevel &logLevel_, char const *fileName_, const int &lineNumber_, bool once_) {
+  inline Logger::Logger(const LogLevel logLevel_, char const *fileName_, const int lineNumber_, bool once_) {
 
     setupStreamBufferSupervisor(); // hook the stream buffer to an object we can handle
     if (logLevel_ != _currentLogLevel_) triggerNewLine(); // force reprinting the prefix if the verbosity has changed
@@ -177,14 +177,14 @@ namespace {
     }
   }
 
-  inline void Logger::throwError(const std::string& errorStr_) {
+  inline void Logger::throwError(const std::string errorStr_) {
     std::stringstream ss;
     ss << "exception thrown by the logger at " << _currentFileName_ << ":" << _currentLineNumber_;
     ss << (errorStr_.empty()? "." : ": " + errorStr_);
     if (Logger::getStreamBufferSupervisorPtr() != nullptr) Logger::getStreamBufferSupervisorPtr()->flush();
     throw std::runtime_error( ss.str() );
   }
-  inline void Logger::triggerExit( const std::string &errorStr_ ){
+  inline void Logger::triggerExit( const std::string errorStr_ ){
     std::cout << "std::exit() called by the logger at " << _currentFileName_ << ":" << _currentLineNumber_;
     std::cout << (errorStr_.empty()? "." : ": " + errorStr_) << std::endl;
     std::exit( EXIT_FAILURE );

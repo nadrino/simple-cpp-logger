@@ -148,10 +148,10 @@ namespace {
 
     // Macro-Related Methods
     // Those intended to be called using the above preprocessor macros
-    inline Logger(const LogLevel &logLevel_, char const * fileName_, const int &lineNumber_, bool once_=false);
+    inline Logger(const LogLevel logLevel_, char const * fileName_, const int lineNumber_, bool once_=false);
 
-    inline static void throwError(const std::string& errorStr_ = "");
-    inline static void triggerExit(const std::string& errorStr_ = "");
+    inline static void throwError(const std::string errorStr_ = "");
+    inline static void triggerExit(const std::string errorStr_ = "");
 
     // Deprecated (left here for compatibility)
     inline static void setMaxLogLevel(int maxLogLevel_);
