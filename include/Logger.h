@@ -77,6 +77,10 @@
 // To set up the logger in a given source file
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
 
+// misc
+#define DEBUG_VAR(myVar) LogDebug << "DEBUG_VAR: " << GET_VAR_NAME_VALUE(myVar) << std::endl
+
+
 // Implementation
 namespace {
 
