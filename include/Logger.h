@@ -78,7 +78,7 @@
 #define LoggerInit( lambdaInit ) LoggerInitializerImpl( lambdaInit )
 
 // misc
-#define DEBUG_VAR(myVar) LogDebug << "DEBUG_VAR: " << GET_VAR_NAME_VALUE(myVar) << std::endl
+#define DEBUG_VAR(myVar) LogDebug << "DEBUG_VAR: " << #myVar << " = " << myVar << std::endl
 
 
 // Implementation
